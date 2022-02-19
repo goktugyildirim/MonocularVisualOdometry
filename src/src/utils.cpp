@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
 void
@@ -73,4 +73,4 @@ Utils::project_point(
 
 
 
-} // eof BundleAdjustment
+} // eof MonocularVO

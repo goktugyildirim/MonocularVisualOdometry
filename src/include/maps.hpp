@@ -13,7 +13,7 @@
 
 #include "maps.hpp"
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
   using FrameSharedPtr = std::shared_ptr<Frame>;
@@ -25,10 +25,10 @@ namespace BundleAdjustment
 class MapInitial
 {
 public:
-  BundleAdjustment::Params params_;
+  MonocularVO::Params params_;
   using MapInitialSharedPtr = std::shared_ptr<MapInitial>;
 
-  explicit MapInitial(BundleAdjustment::Params  params);
+  explicit MapInitial(MonocularVO::Params  params);
 
   // all frames
   std::vector<FrameSharedPtr> frames_;
@@ -39,12 +39,12 @@ public:
   get_last_key_frame();
 
   void
-  push_frame(const BundleAdjustment::FrameSharedPtr& frame);
+  push_frame(const MonocularVO::FrameSharedPtr& frame);
 
-  BundleAdjustment::FrameSharedPtr
+  MonocularVO::FrameSharedPtr
   get_curr_frame();
 
-  BundleAdjustment::FrameSharedPtr
+  MonocularVO::FrameSharedPtr
   get_prev_frame();
 
   int

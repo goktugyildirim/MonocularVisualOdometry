@@ -9,7 +9,7 @@
 #include <opencv4/opencv2/highgui/highgui.hpp>
 #include <Eigen/Dense>
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 using FrameSharedPtr = std::shared_ptr<Frame>;
 

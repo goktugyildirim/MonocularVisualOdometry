@@ -1,10 +1,10 @@
-#include "initializer.hpp"
+#include "monocular_vo_handler.hpp"
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
 Initializer::Initializer(
-const BundleAdjustment::Params& params,
+const MonocularVO::Params& params,
 TypeCallbackTrack &callback_view_tracked)
 : provide_{std::move(callback_view_tracked)},
   keep_initialization_(true),
@@ -168,4 +168,4 @@ Initializer::try_send_batch_to_local_handler(Batch& batch)
 
 
 
-} // end BundleAdjustment
+} // end MonocularVO

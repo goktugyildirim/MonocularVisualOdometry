@@ -11,7 +11,7 @@
 #include "optimization.hpp"
 #include "concurrency/concurrentqueue.h"
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 class LocalHandler
 {
@@ -21,7 +21,7 @@ public:
   using LockFreeQueueBatch = moodycamel::ConcurrentQueue<std::vector<FrameSharedPtr>>;
   using Batch = std::vector<FrameSharedPtr>;
 
-  explicit LocalHandler(const BundleAdjustment::Params& params);
+  explicit LocalHandler(const MonocularVO::Params& params);
   virtual ~LocalHandler();
 
   void start(std::shared_ptr<LockFreeQueueBatch>& queue_batch_to_local_handler);
@@ -30,13 +30,13 @@ public:
 
 private:
   std::mutex mutex_;
-  BundleAdjustment::Params params_;
+  MonocularVO::Params params_;
   std::future<void> future_worker_local_handler_;
   std::atomic_bool keep_local_handling_;
   void handle(std::shared_ptr<LockFreeQueueBatch> &queue_batch_to_local_handler);
 
 
-  BundleAdjustment::LocalObservations build_local_observations(Batch& batch);
+  MonocularVO::LocalObservations build_local_observations(Batch& batch);
 
 
 

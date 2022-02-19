@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-vidcap = cv2.VideoCapture('/home/goktug/projects/BundleAdjustment/src/images_test/videos/t1.mp4')
+vidcap = cv2.VideoCapture('/home/goktug/projects/MonocularVO/src/images_test/videos/t1.mp4')
 success,image = vidcap.read()
 count = 0
 while success:

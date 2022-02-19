@@ -2,11 +2,11 @@
 
 using namespace std::chrono;
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
 void
-BundleAdjustment::Vision::adaptiveNonMaximalSuppresion(
+MonocularVO::Vision::adaptiveNonMaximalSuppresion(
     std::vector<cv::KeyPoint>& keypoints,
     const int& numToKeep)
 {
@@ -61,8 +61,8 @@ BundleAdjustment::Vision::adaptiveNonMaximalSuppresion(
 
 
 void
-BundleAdjustment::Vision::detect_keypoints(
-  const BundleAdjustment::Params& params,
+MonocularVO::Vision::detect_keypoints(
+  const MonocularVO::Params& params,
   std::vector<cv::KeyPoint> &keypoints,
   cv::Mat& img)
 {
@@ -79,8 +79,8 @@ BundleAdjustment::Vision::detect_keypoints(
 }
 
 void
-BundleAdjustment::Vision::keypoints_modern(
-  const BundleAdjustment::Params& params,
+MonocularVO::Vision::keypoints_modern(
+  const MonocularVO::Params& params,
   std::vector<cv::KeyPoint> &keypoints,
   cv::Mat &img,
   const std::string &detectorType)
@@ -107,8 +107,8 @@ BundleAdjustment::Vision::keypoints_modern(
 
 
 void
-BundleAdjustment::Vision::desc_keypoints(
-    const BundleAdjustment::Params& params,
+MonocularVO::Vision::desc_keypoints(
+    const MonocularVO::Params& params,
     std::vector<cv::KeyPoint> &keypoints,
     cv::Mat& descriptors,
     const cv::Mat& img)
@@ -139,10 +139,10 @@ BundleAdjustment::Vision::desc_keypoints(
   extractor->compute(img, keypoints, descriptors);
 }
 
-void BundleAdjustment::Vision::keypoints_shitomasi(
+void MonocularVO::Vision::keypoints_shitomasi(
   std::vector<cv::KeyPoint> &keypoints,
   cv::Mat &img,
-  const BundleAdjustment::Params& params)
+  const MonocularVO::Params& params)
 {
 // compute detector parameters based on image size
   int blockSize =
@@ -170,7 +170,7 @@ void BundleAdjustment::Vision::keypoints_shitomasi(
 }
 
 void
-BundleAdjustment::Vision::keypoints_harris(
+MonocularVO::Vision::keypoints_harris(
   std::vector<cv::KeyPoint> &keypoints,
   cv::Mat &img)
 {
@@ -223,13 +223,13 @@ BundleAdjustment::Vision::keypoints_harris(
 }
 
 void
-BundleAdjustment::Vision::match_descriptors(
+MonocularVO::Vision::match_descriptors(
    std::vector<cv::KeyPoint> &kpts_source,
    std::vector<cv::KeyPoint> &kpts_ref,
    cv::Mat &desc_source,
    cv::Mat &desc_ref,
    std::vector<cv::DMatch> &matched_kpts,
-   const BundleAdjustment::Params& params)
+   const MonocularVO::Params& params)
 {
   // configure matcher
   bool crossCheck = false;
@@ -293,7 +293,7 @@ BundleAdjustment::Vision::match_descriptors(
 
 
 void
-BundleAdjustment::Vision::draw_keypoints(
+MonocularVO::Vision::draw_keypoints(
   cv::Mat &image, const std::vector<cv::KeyPoint> &keypoints)
 {
   for (const auto& kpt:keypoints)
@@ -303,7 +303,7 @@ BundleAdjustment::Vision::draw_keypoints(
 
 
 void
-BundleAdjustment::Vision::make_img_3_channel(
+MonocularVO::Vision::make_img_3_channel(
   cv::Mat &img)
 {
   std::vector<cv::Mat> copies{img,img,img};
@@ -312,7 +312,7 @@ BundleAdjustment::Vision::make_img_3_channel(
 
 
 cv::Mat
-BundleAdjustment::Vision::get_F(
+MonocularVO::Vision::get_F(
     FrameSharedPtr& view1,
     FrameSharedPtr& view2,
     const float& ransac_threshold,
@@ -329,12 +329,12 @@ BundleAdjustment::Vision::get_F(
 
 
 cv::Mat
-BundleAdjustment::Vision::get_E(
-  BundleAdjustment::FrameSharedPtr& view1,
-  BundleAdjustment::FrameSharedPtr& view2,
-  const float& ransac_threshold,
-  cv::Mat& inliers_E,
-  const cv::Mat& K)
+MonocularVO::Vision::get_E(
+        MonocularVO::FrameSharedPtr& view1,
+        MonocularVO::FrameSharedPtr& view2,
+        const float& ransac_threshold,
+        cv::Mat& inliers_E,
+        const cv::Mat& K)
 {
   cv::Mat E = cv::findEssentialMat(view1->keypoints_pt,
          view2->keypoints_pt, K, cv::RANSAC, 0.99,
@@ -345,7 +345,7 @@ BundleAdjustment::Vision::get_E(
 
 
 void
-BundleAdjustment::Vision::refine_matches(
+MonocularVO::Vision::refine_matches(
   FrameSharedPtr &view1,
   FrameSharedPtr &view2,
   const cv::Mat &inliers_F,
@@ -371,9 +371,9 @@ BundleAdjustment::Vision::refine_matches(
 
 
 void
-BundleAdjustment::Vision::recover_pose(
-  const BundleAdjustment::FrameSharedPtr& view1,
-  const BundleAdjustment::FrameSharedPtr& view2,
+MonocularVO::Vision::recover_pose(
+  const MonocularVO::FrameSharedPtr& view1,
+  const MonocularVO::FrameSharedPtr& view2,
   const cv::Mat& F,
   const cv::Mat& E,
   cv::Mat& R,
@@ -404,9 +404,9 @@ BundleAdjustment::Vision::recover_pose(
 
 
 void
-BundleAdjustment::Vision::extract_features(
+MonocularVO::Vision::extract_features(
     FrameSharedPtr& view,
-    const BundleAdjustment::Params &params)
+    const MonocularVO::Params &params)
 {
   Vision::detect_keypoints(params, view->keypoints, view->image_gray);
   Vision::desc_keypoints(params, view->keypoints, view->descriptors, view->image_gray);
@@ -430,8 +430,8 @@ BundleAdjustment::Vision::extract_features(
 
 
 int
-BundleAdjustment::Vision::track_features(
-  const BundleAdjustment::Params& params,
+MonocularVO::Vision::track_features(
+  const MonocularVO::Params& params,
   MapInitialSharedPtr & map,
   cv::Mat& R,
   cv::Mat& t)
@@ -497,9 +497,9 @@ BundleAdjustment::Vision::track_features(
 
 
 
-BundleAdjustment::Vision::MatchKeyFrameSharedPtr
-BundleAdjustment::Vision::match_key_frames(
-  const BundleAdjustment::Params& params,
+MonocularVO::Vision::MatchKeyFrameSharedPtr
+MonocularVO::Vision::match_key_frames(
+  const MonocularVO::Params& params,
   FrameSharedPtr& keyframe_old,
   FrameSharedPtr& keyframe_new)
 {
@@ -733,4 +733,4 @@ Vision::average_ang_px_displacement(
   return average_displacement/prev_frame.size();
 }
 
-} // eof BundleAdjustment
+} // eof MonocularVO

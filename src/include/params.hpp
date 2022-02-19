@@ -4,7 +4,7 @@
 #include <opencv2/core.hpp>
 #include <string>
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
   struct Params

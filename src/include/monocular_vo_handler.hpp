@@ -20,7 +20,7 @@
 
 #include <Eigen/Dense>
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
 class Initializer
@@ -38,7 +38,7 @@ class Initializer
   TypeCallbackTrack provide_;
 
   explicit Initializer(
-      const BundleAdjustment::Params& params,
+      const MonocularVO::Params& params,
       TypeCallbackTrack&  callback_view_tracked);
 
   virtual ~Initializer();
@@ -48,7 +48,7 @@ class Initializer
   void stop();
 
  private:
-  BundleAdjustment::Params params_;
+  MonocularVO::Params params_;
   std::future<void> future_worker_initializer_;
   std::atomic_bool keep_initialization_;
 

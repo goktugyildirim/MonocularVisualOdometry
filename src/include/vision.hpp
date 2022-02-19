@@ -28,7 +28,7 @@
 
 #include <algorithm>
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 class Vision
 {
@@ -43,19 +43,19 @@ class Vision
                                const int& numToKeep);
 
   static void
-  detect_keypoints(const BundleAdjustment::Params& params,
+  detect_keypoints(const MonocularVO::Params& params,
                 std::vector<cv::KeyPoint> &keypoints,
                 cv::Mat& img);
 
   static void
-  keypoints_modern(const BundleAdjustment::Params& params,
+  keypoints_modern(const MonocularVO::Params& params,
                    std::vector<cv::KeyPoint> &keypoints,
                 cv::Mat &img, const std::string &detectorType);
 
   static void
   keypoints_shitomasi(std::vector<cv::KeyPoint> &keypoints,
                       cv::Mat &img,
-                       const BundleAdjustment::Params& params);
+                       const MonocularVO::Params& params);
 
   static void
   keypoints_harris(std::vector<cv::KeyPoint> &keypoints,
@@ -63,7 +63,7 @@ class Vision
 
 
   static void
-  desc_keypoints(const BundleAdjustment::Params& params,
+  desc_keypoints(const MonocularVO::Params& params,
                  std::vector<cv::KeyPoint> &keypoints,
                  cv::Mat& descriptors,
                  const cv::Mat& img);
@@ -74,36 +74,36 @@ class Vision
                     cv::Mat &desc_source,
                     cv::Mat &desc_ref,
                     std::vector<cv::DMatch> &matched_kpts,
-                    const BundleAdjustment::Params& params);
+                    const MonocularVO::Params& params);
 
   static void
   draw_keypoints(cv::Mat& image,
     const std::vector<cv::KeyPoint>& keypoints);
 
   static cv::Mat
-  draw_matches(const BundleAdjustment::FrameSharedPtr& view1,
-               const BundleAdjustment::FrameSharedPtr& view2);
+  draw_matches(const MonocularVO::FrameSharedPtr& view1,
+               const MonocularVO::FrameSharedPtr& view2);
 
   static void
   make_img_3_channel(cv::Mat& img);
 
   static cv::Mat
-  get_F(BundleAdjustment::FrameSharedPtr& view1,
-        BundleAdjustment::FrameSharedPtr& view2,
+  get_F(MonocularVO::FrameSharedPtr& view1,
+        MonocularVO::FrameSharedPtr& view2,
         const float& ransac_threshold,
         cv::Mat& inliers_F);
 
   static cv::Mat
-  get_E(BundleAdjustment::FrameSharedPtr& view1,
-        BundleAdjustment::FrameSharedPtr& view2,
+  get_E(MonocularVO::FrameSharedPtr& view1,
+        MonocularVO::FrameSharedPtr& view2,
         const float& ransac_threshold,
         cv::Mat& inliers_E,
         const cv::Mat& K);
 
   static void
   recover_pose(
-        const BundleAdjustment::FrameSharedPtr& view1,
-        const BundleAdjustment::FrameSharedPtr& view2,
+        const MonocularVO::FrameSharedPtr& view1,
+        const MonocularVO::FrameSharedPtr& view2,
         const cv::Mat& F,
         const cv::Mat& E,
         cv::Mat& R,
@@ -122,13 +122,13 @@ class Vision
 
   static void
   extract_features(FrameSharedPtr& view,
-                   const BundleAdjustment::Params& params);
+                   const MonocularVO::Params& params);
 
 
 
   static int
   track_features(
-      const BundleAdjustment::Params& params,
+      const MonocularVO::Params& params,
       MapInitialSharedPtr & map,
       cv::Mat& R,
       cv::Mat& t);
@@ -137,7 +137,7 @@ class Vision
 
   static MatchKeyFrameSharedPtr
   match_key_frames(
-      const BundleAdjustment::Params& params,
+      const MonocularVO::Params& params,
       FrameSharedPtr& keyframe_old,
       FrameSharedPtr& keyframe_new);
 

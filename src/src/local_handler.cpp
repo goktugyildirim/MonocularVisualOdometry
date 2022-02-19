@@ -2,24 +2,24 @@
 
 using namespace std::chrono;
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
 
-BundleAdjustment::LocalHandler::LocalHandler(
-  const BundleAdjustment::Params &params)
+MonocularVO::LocalHandler::LocalHandler(
+  const MonocularVO::Params &params)
 : params_(params),
   keep_local_handling_(true)
 {}
 
 
-BundleAdjustment::LocalHandler::~LocalHandler()
+MonocularVO::LocalHandler::~LocalHandler()
 {
   std::cout << "Shutdown ~LocalHandler." << std::endl;
   future_worker_local_handler_.get();
 }
 
-void BundleAdjustment::LocalHandler::start(
+void MonocularVO::LocalHandler::start(
   std::shared_ptr<LockFreeQueueBatch> &queue_batch_to_local_handler)
 {
   future_worker_local_handler_ = std::async(std::launch::async,
@@ -29,7 +29,7 @@ void BundleAdjustment::LocalHandler::start(
 }
 
 void
-BundleAdjustment::LocalHandler::handle(
+MonocularVO::LocalHandler::handle(
   std::shared_ptr<LockFreeQueueBatch> &queue_batch_to_local_handler)
 {
   Batch batch;
@@ -43,11 +43,12 @@ BundleAdjustment::LocalHandler::handle(
     while (!queue_batch_to_local_handler->try_dequeue(
         batch)) {}
 
+/*
     mutex.lock();
     //std::cout << "Batch is received to local handler." << std::endl;
     auto start = high_resolution_clock::now();
     LocalObservations local_observations = build_local_observations(batch);
-    BundleAdjustment::Optimization::LocalObservations local_observations_opt = Optimization::solve_local_ba(local_observations, params_.K);
+    MonocularVO::Optimization::LocalObservations local_observations_opt = Optimization::solve_local_ba(local_observations, params_.K);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
     std::cout << "Time taken by function: "
@@ -78,6 +79,7 @@ BundleAdjustment::LocalHandler::handle(
     std::cout << "##########################################"
                  "##############################################" << std::endl;
     mutex.unlock();
+*/
 
 
 /*    mutex.lock();
@@ -111,14 +113,14 @@ BundleAdjustment::LocalHandler::handle(
 
 
 void
-BundleAdjustment::LocalHandler::stop()
+MonocularVO::LocalHandler::stop()
 {
   keep_local_handling_=false;
 }
 
 
-BundleAdjustment::LocalObservations
-BundleAdjustment::LocalHandler::build_local_observations(Batch& batch)
+MonocularVO::LocalObservations
+MonocularVO::LocalHandler::build_local_observations(Batch& batch)
 {
 
   float ransac_threshold = 0.45;

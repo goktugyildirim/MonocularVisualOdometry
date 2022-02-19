@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(bundle_adjustment)
+project(monocular_vo)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O3")
@@ -15,14 +15,14 @@ find_package(TBB REQUIRED)
 ament_auto_find_build_dependencies()
 
 
-ament_auto_add_library(bundle_adjustment_node SHARED
-  include/bundle_adjustment_node.hpp
+ament_auto_add_library(monocular_vo_node SHARED
+  include/monocular_vo_node.hpp
   include/view.hpp
   include/params.hpp
   include/vision.hpp
   include/utils.hpp
   include/types.hpp
-  include/initializer.hpp
+  include/monocular_vo_handler.hpp
   include/maps.hpp
   include/local_handler.hpp
   include/bundle_adjustment.hpp
@@ -32,10 +32,10 @@ ament_auto_add_library(bundle_adjustment_node SHARED
   include/concurrency/blockingconcurrentqueue.h
   include/concurrency/lightweightsemaphore.h
 
-  src/bundle_adjustment_node.cpp
+  src/monocular_vo_node.cpp
   src/vision.cpp
   src/utils.cpp
-  src/initializer.cpp
+  src/monocular_vo_handler.cpp
   src/maps.cpp
   src/local_handler.cpp
   src/optimization.cpp
@@ -47,12 +47,12 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
   )
   
-target_include_directories(bundle_adjustment_node
+target_include_directories(monocular_vo_node
         SYSTEM
         PUBLIC
         
         )
-target_link_libraries(bundle_adjustment_node
+target_link_libraries(monocular_vo_node
         ${OpenCV_LIBRARIES}
         Eigen3::Eigen
         Ceres::ceres
@@ -60,9 +60,9 @@ target_link_libraries(bundle_adjustment_node
         ) 
 
 
-rclcpp_components_register_node(bundle_adjustment_node
-  PLUGIN "BundleAdjustment::BundleAdjustmentNode"
-  EXECUTABLE bundle_adjustment_node_exe
+rclcpp_components_register_node(monocular_vo_node
+  PLUGIN "MonocularVO::MonocularVONode"
+  EXECUTABLE monocular_vo_node_exe
 )
 
 # Ament Exporting

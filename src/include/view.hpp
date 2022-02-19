@@ -6,7 +6,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/affine.hpp>
 
-namespace BundleAdjustment {
+namespace MonocularVO {
 class Frame
 {
  public:

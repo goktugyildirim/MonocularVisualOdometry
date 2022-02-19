@@ -1,9 +1,9 @@
-#include <bundle_adjustment_node.hpp>
+#include <monocular_vo_node.hpp>
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
-BundleAdjustmentNode::BundleAdjustmentNode(
+MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
   : Node("bundle_adjustment_node", node_options),
     view_id_(0),
@@ -17,10 +17,10 @@ BundleAdjustmentNode::BundleAdjustmentNode(
 {
   // Initialization :::
   queue_frame_to_initialization_ = std::make_shared<LockFreeQueue>(30);
-  BundleAdjustment::Initializer::TypeCallbackTrack
+  MonocularVO::Initializer::TypeCallbackTrack
       callback_view_tracked =
       std::bind(
-          &BundleAdjustmentNode::callback_view_tracked,
+          &MonocularVONode::callback_view_tracked,
           this, std::placeholders::_1
       );
   worker_initializer_ = std::make_shared<Initializer>(
@@ -34,17 +34,17 @@ BundleAdjustmentNode::BundleAdjustmentNode(
 
   timer_provide_data_frame_ = this->create_wall_timer(
       std::chrono::milliseconds(40),
-      std::bind(&BundleAdjustmentNode::CallbackImageProvider,
+      std::bind(&MonocularVONode::CallbackImageProvider,
                 this));
 }
 
 void
-BundleAdjustmentNode::CallbackImageProvider()
+MonocularVONode::CallbackImageProvider()
 {
   if (view_id_<840)
   {
-    std::string img_name = "/home/goktug/projects/BundleAdjustment/src/images/" +std::to_string(view_id_) + ".jpg";
-    //std::string img_name = "/home/goktug/projects/BundleAdjustment/src/images/img.jpeg";
+    std::string img_name = "/home/goktug/projects/MonocularVisualOdometry/src/images/" +std::to_string(view_id_) + ".jpg";
+    //std::string img_name = "/home/goktug/projects/MonocularVO/src/images/img.jpeg";
     cv::Mat img = imread(
         img_name,
         cv::IMREAD_COLOR);
@@ -99,7 +99,7 @@ BundleAdjustmentNode::CallbackImageProvider()
 
 
 void
-BundleAdjustmentNode::callback_view_tracked(
+MonocularVONode::callback_view_tracked(
     const cv::Mat& img_concat)
 {
 /*
@@ -115,8 +115,8 @@ BundleAdjustmentNode::callback_view_tracked(
 }
 
 
-}  // namespace BundleAdjustment
+}  // namespace MonocularVO
 
 
 RCLCPP_COMPONENTS_REGISTER_NODE(
-    BundleAdjustment::BundleAdjustmentNode)
+        MonocularVO::MonocularVONode)

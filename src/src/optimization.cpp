@@ -1,10 +1,10 @@
 #include "optimization.hpp"
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
-BundleAdjustment::Optimization::LocalObservations
-Optimization::solve_local_ba(BundleAdjustment::LocalObservations& local_observations,
+MonocularVO::Optimization::LocalObservations
+Optimization::solve_local_ba(MonocularVO::LocalObservations& local_observations,
                              const cv::Mat& K)
 {
   // Load 2D points observed from multiple views:
@@ -68,6 +68,7 @@ Optimization::solve_local_ba(BundleAdjustment::LocalObservations& local_observat
 
   options.max_num_iterations = 12;
   options.num_threads = 12;
+  //options.minimizer_progress_to_stdout = true;
   ceres::Solver::Summary summary;
   ceres::Solve(options, &ba, &summary);
   //std::cout << summary.FullReport() << std::endl;

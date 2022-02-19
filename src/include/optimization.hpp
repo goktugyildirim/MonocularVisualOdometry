@@ -8,7 +8,7 @@
 #include "vision.hpp"
 #include "view.hpp"
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
 class Optimization
@@ -26,8 +26,8 @@ public:
   };
 
 
-  static BundleAdjustment::Optimization::LocalObservations
-  solve_local_ba(BundleAdjustment::LocalObservations& local_observations, const cv::Mat& K);
+  static MonocularVO::Optimization::LocalObservations
+  solve_local_ba(MonocularVO::LocalObservations& local_observations, const cv::Mat& K);
 
 
 };

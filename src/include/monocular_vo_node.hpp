@@ -6,17 +6,17 @@
 #include "view.hpp"
 #include "utils.hpp"
 #include "types.hpp"
-#include "initializer.hpp"
+#include "monocular_vo_handler.hpp"
 
 #include <string>
 #include <memory>
 #include <vector>
 #include <queue>
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
-class BundleAdjustmentNode : public rclcpp::Node
+class MonocularVONode : public rclcpp::Node
 {
 public:
   using FameSharedPtr = std::shared_ptr<Frame>;
@@ -24,11 +24,11 @@ public:
   using ImageMsgT = sensor_msgs::msg::Image;
   using ImageMsgPtrT = sensor_msgs::msg::Image::SharedPtr;
 
-  explicit BundleAdjustmentNode(
+  explicit MonocularVONode(
     const rclcpp::NodeOptions & node_options);
 
 private:
-  BundleAdjustment::Params params_;
+  MonocularVO::Params params_;
 
   // Tracking:
   std::shared_ptr<LockFreeQueue> queue_frame_to_initialization_;
@@ -45,7 +45,7 @@ private:
 
 };
 
-}  // namespace BundleAdjustment
+}  // namespace MonocularVO
 
 
 

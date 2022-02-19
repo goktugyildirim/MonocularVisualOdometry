@@ -2,25 +2,25 @@
 #include <utility>
 
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 
 
-BundleAdjustment::MapInitial::MapInitial(
-  BundleAdjustment::Params  params)
+MonocularVO::MapInitial::MapInitial(
+        MonocularVO::Params  params)
   : params_(std::move(params))
 {
 
 }
 
-BundleAdjustment::FrameSharedPtr
-BundleAdjustment::MapInitial::get_curr_frame()
+MonocularVO::FrameSharedPtr
+MonocularVO::MapInitial::get_curr_frame()
 {
   return frames_.end()[-1];
 }
 
-BundleAdjustment::FrameSharedPtr
-BundleAdjustment::MapInitial::get_prev_frame()
+MonocularVO::FrameSharedPtr
+MonocularVO::MapInitial::get_prev_frame()
 {
   if (get_frame_count()<2)
   {
@@ -33,7 +33,7 @@ BundleAdjustment::MapInitial::get_prev_frame()
 
 
 void
-BundleAdjustment::MapInitial::delete_past_images()
+MonocularVO::MapInitial::delete_past_images()
 {
   for (
     auto it=frames_.begin();
@@ -50,21 +50,21 @@ BundleAdjustment::MapInitial::delete_past_images()
 
 
 void
-BundleAdjustment::MapInitial::push_frame(
-  const BundleAdjustment::FrameSharedPtr &frame)
+MonocularVO::MapInitial::push_frame(
+  const MonocularVO::FrameSharedPtr &frame)
 {
   frames_.push_back(frame);
 }
 
 
 int
-BundleAdjustment::MapInitial::get_frame_count()
+MonocularVO::MapInitial::get_frame_count()
 {
   return frames_.size();
 }
 
 int
-BundleAdjustment::MapInitial::get_key_frame_count()
+MonocularVO::MapInitial::get_key_frame_count()
 {
   int count_key_frame = 0;
   for (const auto& frame:frames_)
@@ -76,7 +76,7 @@ BundleAdjustment::MapInitial::get_key_frame_count()
 }
 
 void
-BundleAdjustment::MapInitial::update_past_frames_optical_flow(
+MonocularVO::MapInitial::update_past_frames_optical_flow(
   const std::vector<uchar>& status)
 {
   //getting rid of points for which the KLT tracking
@@ -105,7 +105,7 @@ BundleAdjustment::MapInitial::update_past_frames_optical_flow(
 
 
 void
-BundleAdjustment::MapInitial::update_past_frames_epipolar(
+MonocularVO::MapInitial::update_past_frames_epipolar(
   const cv::Mat& inliers_F,
   const cv::Mat& inliers_E)
 {
@@ -130,7 +130,7 @@ BundleAdjustment::MapInitial::update_past_frames_epipolar(
 
 
 void
-BundleAdjustment::MapInitial::print_frames_info()
+MonocularVO::MapInitial::print_frames_info()
 {
   for (const FrameSharedPtr& frame:frames_)
     std::cout << "Frame id: " << frame->view_id << " "
@@ -221,4 +221,4 @@ MapInitial::build_batch_2()
 }
 
 
-} // eof BundleAdjustment
+} // eof MonocularVO

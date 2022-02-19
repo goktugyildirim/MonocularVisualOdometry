@@ -9,7 +9,7 @@
 #include <std_msgs/msg/header.hpp>
 #include "types.hpp"
 
-namespace BundleAdjustment
+namespace MonocularVO
 {
 class Utils
 {
