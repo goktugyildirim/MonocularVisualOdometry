@@ -1,0 +1,7 @@
+
+---
+/**:
+  ros__parameters:
+    number_of_sources: 3
+    output_frame_id:  "vehicle"
+    cloud_size:       1500000
