@@ -22,13 +22,13 @@ namespace MonocularVO
   using MatchKeyFrameSharedPtr = std::shared_ptr<MatchKeyFrame>;
 
 
-class MapInitial
+class Map
 {
 public:
   MonocularVO::Params params_;
-  using MapInitialSharedPtr = std::shared_ptr<MapInitial>;
+  using MapInitialSharedPtr = std::shared_ptr<Map>;
 
-  explicit MapInitial(MonocularVO::Params  params);
+  explicit Map(MonocularVO::Params  params);
 
   // all frames
   std::vector<FrameSharedPtr> frames_;
@@ -174,7 +174,7 @@ public:
 
 private:
 
-}; // eof MapInitial
+}; // eof Map
 
 
 // #######################################################

@@ -668,7 +668,7 @@ struct ProducerToken
 	//     3) The associated queue was destroyed
 	// Note that if valid() returns true, that only indicates
 	// that the token is valid for use with a specific queue,
-	// but not which one; that's up to the user to track.
+	// but not which one; that's up to the user to do_monocular_vo.
 	inline bool valid() const { return producer != nullptr; }
 	
 	~ProducerToken()

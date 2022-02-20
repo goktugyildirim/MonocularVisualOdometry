@@ -34,7 +34,7 @@ class Vision
 {
  public:
 
-  using MapInitialSharedPtr = std::shared_ptr<MapInitial>;
+  using MapInitialSharedPtr = std::shared_ptr<Map>;
   using MatchKeyFrameSharedPtr = std::shared_ptr<MatchKeyFrame>;
 
 

@@ -6,7 +6,7 @@ namespace MonocularVO
 {
 
 
-MonocularVO::MapInitial::MapInitial(
+MonocularVO::Map::Map(
         MonocularVO::Params  params)
   : params_(std::move(params))
 {
@@ -14,13 +14,13 @@ MonocularVO::MapInitial::MapInitial(
 }
 
 MonocularVO::FrameSharedPtr
-MonocularVO::MapInitial::get_curr_frame()
+MonocularVO::Map::get_curr_frame()
 {
   return frames_.end()[-1];
 }
 
 MonocularVO::FrameSharedPtr
-MonocularVO::MapInitial::get_prev_frame()
+MonocularVO::Map::get_prev_frame()
 {
   if (get_frame_count()<2)
   {
@@ -33,7 +33,7 @@ MonocularVO::MapInitial::get_prev_frame()
 
 
 void
-MonocularVO::MapInitial::delete_past_images()
+MonocularVO::Map::delete_past_images()
 {
   for (
     auto it=frames_.begin();
@@ -50,7 +50,7 @@ MonocularVO::MapInitial::delete_past_images()
 
 
 void
-MonocularVO::MapInitial::push_frame(
+MonocularVO::Map::push_frame(
   const MonocularVO::FrameSharedPtr &frame)
 {
   frames_.push_back(frame);
@@ -58,13 +58,13 @@ MonocularVO::MapInitial::push_frame(
 
 
 int
-MonocularVO::MapInitial::get_frame_count()
+MonocularVO::Map::get_frame_count()
 {
   return frames_.size();
 }
 
 int
-MonocularVO::MapInitial::get_key_frame_count()
+MonocularVO::Map::get_key_frame_count()
 {
   int count_key_frame = 0;
   for (const auto& frame:frames_)
@@ -76,7 +76,7 @@ MonocularVO::MapInitial::get_key_frame_count()
 }
 
 void
-MonocularVO::MapInitial::update_past_frames_optical_flow(
+MonocularVO::Map::update_past_frames_optical_flow(
   const std::vector<uchar>& status)
 {
   //getting rid of points for which the KLT tracking
@@ -105,7 +105,7 @@ MonocularVO::MapInitial::update_past_frames_optical_flow(
 
 
 void
-MonocularVO::MapInitial::update_past_frames_epipolar(
+MonocularVO::Map::update_past_frames_epipolar(
   const cv::Mat& inliers_F,
   const cv::Mat& inliers_E)
 {
@@ -130,7 +130,7 @@ MonocularVO::MapInitial::update_past_frames_epipolar(
 
 
 void
-MonocularVO::MapInitial::print_frames_info()
+MonocularVO::Map::print_frames_info()
 {
   for (const FrameSharedPtr& frame:frames_)
     std::cout << "Frame id: " << frame->view_id << " "
@@ -143,7 +143,7 @@ std::cout << "Local landmark count: " << count_local_landmark_ << std::endl;
 
 
 FrameSharedPtr
-MapInitial::get_last_key_frame()
+Map::get_last_key_frame()
 {
   FrameSharedPtr last_key_frame;
   for (auto frame:frames_)
@@ -155,7 +155,7 @@ MapInitial::get_last_key_frame()
 }
 
 int
-MapInitial::get_last_key_frame_id_in_frames()
+Map::get_last_key_frame_id_in_frames()
 {
   std::vector<int> vector_ids_kyfrm;
   for(int i=0; i<get_frame_count(); i++)
@@ -167,7 +167,7 @@ MapInitial::get_last_key_frame_id_in_frames()
 }
 
 int
-MapInitial::get_prev_key_frame_id_in_frames()
+Map::get_prev_key_frame_id_in_frames()
 {
   std::vector<int> vector_ids_kyfrm;
   for(int i=0; i<get_frame_count(); i++)
@@ -182,7 +182,7 @@ MapInitial::get_prev_key_frame_id_in_frames()
 
 
 Batch
-MapInitial::build_batch_1()
+Map::build_batch_1()
 {
   Batch batch;
   FrameSharedPtr prev_key_frame = frames_[get_prev_key_frame_id_in_frames()];
@@ -206,7 +206,7 @@ MapInitial::build_batch_1()
 
 
 Batch
-MapInitial::build_batch_2()
+Map::build_batch_2()
 {
   Batch batch;
   FrameSharedPtr prev_key_frame = frames_[get_prev_key_frame_id_in_frames()];

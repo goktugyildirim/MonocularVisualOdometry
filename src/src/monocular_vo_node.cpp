@@ -17,13 +17,13 @@ MonocularVONode::MonocularVONode(
 {
   // Initialization :::
   queue_frame_to_initialization_ = std::make_shared<LockFreeQueue>(30);
-  MonocularVO::Initializer::TypeCallbackTrack
+  MonocularVO::MonocularVOHandler::TypeCallbackTrack
       callback_view_tracked =
       std::bind(
           &MonocularVONode::callback_view_tracked,
           this, std::placeholders::_1
       );
-  worker_initializer_ = std::make_shared<Initializer>(
+  worker_initializer_ = std::make_shared<MonocularVOHandler>(
       params_,
       callback_view_tracked);
   worker_initializer_->start(queue_frame_to_initialization_);

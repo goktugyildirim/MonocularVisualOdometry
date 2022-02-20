@@ -23,7 +23,7 @@
 namespace MonocularVO
 {
 
-class Initializer
+class MonocularVOHandler
 {
  public:
 
@@ -33,15 +33,15 @@ class Initializer
   using LockFreeQueueBatch = moodycamel::ConcurrentQueue<Batch>;
   using TypeCallbackTrack = std::function<void (const cv::Mat& img_concat)>;
 
-  using MapInitialSharedPtr = std::shared_ptr<MapInitial>;
+  using MapSharedPtr = std::shared_ptr<Map>;
 
   TypeCallbackTrack provide_;
 
-  explicit Initializer(
+  explicit MonocularVOHandler(
       const MonocularVO::Params& params,
       TypeCallbackTrack&  callback_view_tracked);
 
-  virtual ~Initializer();
+  virtual ~MonocularVOHandler();
 
   void start(std::shared_ptr<LockFreeQueue>& queue_view_to_initialization);
 
@@ -52,8 +52,8 @@ class Initializer
   std::future<void> future_worker_initializer_;
   std::atomic_bool keep_initialization_;
 
-  void track(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
-  MapInitialSharedPtr map_initial_;
+  void do_monocular_vo(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
+  MapSharedPtr map_initial_;
 
   void try_send_batch_to_local_handler(Batch& batch);
   std::shared_ptr<LocalHandler> worker_local_handler_;

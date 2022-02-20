@@ -34,7 +34,7 @@ private:
   std::shared_ptr<LockFreeQueue> queue_frame_to_initialization_;
   void callback_view_tracked(
       const cv::Mat& img_concat);
-  std::shared_ptr<Initializer> worker_initializer_;
+  std::shared_ptr<MonocularVOHandler> worker_initializer_;
   rclcpp::Publisher<ImageMsgT>::SharedPtr pub_match_view_;
 
   // Timer to provide DataFrame:

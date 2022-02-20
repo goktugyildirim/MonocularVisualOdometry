@@ -3,14 +3,14 @@
 namespace MonocularVO
 {
 
-Initializer::Initializer(
+MonocularVOHandler::MonocularVOHandler(
 const MonocularVO::Params& params,
 TypeCallbackTrack &callback_view_tracked)
 : provide_{std::move(callback_view_tracked)},
   keep_initialization_(true),
   params_(params)
 {
-  map_initial_ = std::make_shared<MapInitial>(params);
+  map_initial_ = std::make_shared<Map>(params);
   // Local Handler Stuff:
   // * Local handler solves local BA problem
   // Batch :: [last_KF, N x KF,  curr_KF] --> Local Bundle Adjustment design
@@ -20,24 +20,24 @@ TypeCallbackTrack &callback_view_tracked)
 }
 
 void
-Initializer::start(std::shared_ptr<LockFreeQueue> &queue_view_to_initialization)
+MonocularVOHandler::start(std::shared_ptr<LockFreeQueue> &queue_view_to_initialization)
 {
   future_worker_initializer_ = std::async(std::launch::async,
-                              &Initializer::track,
+                                          &MonocularVOHandler::do_monocular_vo,
                               this,
                               std::ref(queue_view_to_initialization));
 }
 
-Initializer::~Initializer() {
-  std::cout << "Shutdown ~Initializer." << std::endl;
+MonocularVOHandler::~MonocularVOHandler() {
+  std::cout << "Shutdown MonocularVOHandlerHandler." << std::endl;
   future_worker_initializer_.get();
 }
 
 void
-Initializer::stop(){ keep_initialization_ = false;}
+MonocularVOHandler::stop(){ keep_initialization_ = false;}
 
 void
-Initializer::track(
+MonocularVOHandler::do_monocular_vo(
     std::shared_ptr<LockFreeQueue> &queue_view_to_tracking)
 {
   FrameSharedPtr frame(new Frame);
@@ -74,7 +74,7 @@ Initializer::track(
 
       // Condition check for selecting key-frame:
       // Condition 1:
-      // You must track at least 50 features
+      // You must do_monocular_vo at least 50 features
       // throughout the last 'max_frame_count_to_key_frame' frames!
       int diff_last_keyframe = (
           map_initial_->get_curr_frame()->
@@ -138,7 +138,7 @@ Initializer::track(
 
 
 void
-Initializer::try_send_batch_to_local_handler(Batch& batch)
+MonocularVOHandler::try_send_batch_to_local_handler(Batch& batch)
 {
   Batch batch_copy;
 
