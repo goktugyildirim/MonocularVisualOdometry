@@ -10,7 +10,7 @@ TypeCallbackTrack &callback_view_tracked)
   keep_visual_odometry_(true),
   params_(params)
 {
-
+   map_ = std::make_shared<Map>(params);
   // Local Handler Stuff:
   // * Local handler solves local BA problem
   // Batch :: [last_KF, N x KF,  curr_KF] --> Local Bundle Adjustment design
@@ -40,7 +40,6 @@ void
 MonocularVOHandler::do_monocular_vo(
     std::shared_ptr<LockFreeQueue> &queue_view_to_tracking)
 {
-  MapSharedPtr map = std::make_shared<Map>(params_);
   cv::Mat R_curr = cv::Mat::eye(3,3, 6);
   cv::Mat t_curr = cv::Mat::zeros(3,1,6);
   double scale = 1;
@@ -53,40 +52,40 @@ MonocularVOHandler::do_monocular_vo(
     FrameSharedPtr frame(new Frame);
     while (!queue_view_to_tracking->try_dequeue(frame)) {}
 
-    if (frame->view_id == 0)  // First frame is the key-frame:
+/*    if (frame->view_id == 0)  // First frame is the key-frame:
     {
       frame->set_key_frame();
       Vision::extract_features(frame, params_);
-      map->push_frame(frame);
+      map_->push_frame(frame);
     }
     else // Not first frame
     {
-      map->push_frame(frame);
+      map_->push_frame(frame);
       cv::Mat R,t;
         count_local_landmark = Vision::track_features(
-                params_, map, R, t);
+          params_, map_, R, t);
 
       // Scale can ben given from speed odometer or IMU | x = x0 + V*dt
        R_curr = R*R_curr;  t_curr = t_curr + scale*(R_curr*t);
        //std::cout << "Odometry translation: " << t_curr.t() << std::endl;
 
       provide_(Vision::visualize_feature_tracking(
-              map, false, false));
+          map_, false, false));
 
       // Condition check for selecting key-frame:
       // Condition 1:
       // You must do_monocular_vo at least 50 features
       // throughout the last 'max_frame_count_to_key_frame' frames!
       int diff_last_keyframe = (
-              map->get_curr_frame()->
-              view_id - map->get_last_key_frame()->view_id);
+          map_->get_curr_frame()->
+              view_id - map_->get_last_key_frame()->view_id);
       bool condition1 = diff_last_keyframe > params_.max_frame_count_to_key_frame
                         and count_local_landmark > 50;
       // Condition 2:
       double curr_displacement = Vision::average_ang_px_displacement(
-              map->get_last_key_frame()->keypoints_pt,
-              map->get_curr_frame()->keypoints_pt,
-              frame->width, frame->height);
+          map_->get_last_key_frame()->keypoints_pt,
+          map_->get_curr_frame()->keypoints_pt,
+          frame->width, frame->height);
       //std::cout << "Curr angular px displacement is " << int(curr_displacement) << " degree." << std::endl;
       bool condition2 = curr_displacement > params_.max_angular_px_disp;
 
@@ -98,7 +97,7 @@ MonocularVOHandler::do_monocular_vo(
         if (condition1)
         {
           std::cout << "\nMax frame count to be a key-frame is exceed." << std::endl;
-          batch = map->build_batch_1();
+          batch = map_->build_batch_1();
         }
 
         if (condition2)
@@ -106,13 +105,13 @@ MonocularVOHandler::do_monocular_vo(
           std::cout << "\nAngular pixel displacement is exceed. View id: " <<
           frame->view_id  << " | "<< int(curr_displacement) <<
           " degree" <<  std::endl;
-          batch = map->build_batch_2();
+          batch = map_->build_batch_2();
         }
 
         std::cout << "Count current tracked feature from the last key-frame (keypoints_pt): "
-                  << map->count_local_landmark_ << std::endl;
+                  << map_->count_local_landmark_ << std::endl;
         // Send local handler no need feature extraction:
-        //map->print_frames_info();
+        //map_->print_frames_info();
         try_send_batch_to_local_handler(batch);
 
       }
@@ -124,17 +123,17 @@ MonocularVOHandler::do_monocular_vo(
       {
         std::cout << "\nFeature extraction required." << std::endl;
         frame->set_key_frame();
-        Batch batch = map->build_batch_2();
+        Batch batch = map_->build_batch_2();
 
         // Send global handler
 
         Vision::extract_features(frame, params_);
-        map->delete_past_images();
+        map_->delete_past_images();
         std::cout << "\n##########################################"
                      "##############################################" << std::endl;
       }
-      }
-    //map->print_frames_info();
+      }*/
+    //map_->print_frames_info();
     } // eof view_id > 0
 
 }

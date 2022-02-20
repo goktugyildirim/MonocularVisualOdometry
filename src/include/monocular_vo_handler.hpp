@@ -52,6 +52,8 @@ class MonocularVOHandler
   std::future<void> future_worker_vo_handler_;
   std::atomic_bool keep_visual_odometry_;
 
+  MapSharedPtr map_;
+
   void do_monocular_vo(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
 
   void try_send_batch_to_local_handler(Batch& batch);
