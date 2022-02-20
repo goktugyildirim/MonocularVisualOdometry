@@ -38,6 +38,8 @@ class Vision
   using MatchKeyFrameSharedPtr = std::shared_ptr<MatchKeyFrame>;
 
 
+
+
   static void
   adaptiveNonMaximalSuppresion(std::vector<cv::KeyPoint>& keypoints,
                                const int& numToKeep);
@@ -151,8 +153,6 @@ class Vision
   average_ang_px_displacement(const std::vector<cv::Point2f> &prev_frame,
                               const std::vector<cv::Point2f> &curr_frame,
                               const float& img_height, const float& img_width);
-
-
 
 };
 

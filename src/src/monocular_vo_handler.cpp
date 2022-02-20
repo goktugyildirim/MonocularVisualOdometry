@@ -116,6 +116,8 @@ MonocularVOHandler::do_monocular_vo(
 
       }
 
+
+      // Solve global BA
       // Condition 3:
       else if (count_local_landmark < params_.count_min_tracked)
       {
