@@ -10,7 +10,7 @@ MonocularVONode::MonocularVONode(
     params_(false, // The fastest combination : FAST - BRIEF - use modern: true
    "SHITOMASI","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
-   3000,999999,99999999,160,
+   500,999999,99999999,160,
    // The most important parameters:
    250, 25,
    20, 8,1)
@@ -90,7 +90,7 @@ MonocularVONode::CallbackImageProvider()
       // spin until write a value
     }
 
-  }else
+  } else
     view_id_ = 0;
 
   view_id_++;

@@ -49,7 +49,7 @@ class MonocularVOHandler
 
  private:
   MonocularVO::Params params_;
-  std::future<void> future_worker_initializer_;
+  std::future<void> future_worker_vo_handler_;
   std::atomic_bool keep_visual_odometry_;
 
   void do_monocular_vo(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);

@@ -22,15 +22,15 @@ TypeCallbackTrack &callback_view_tracked)
 void
 MonocularVOHandler::start(std::shared_ptr<LockFreeQueue> &queue_view_to_initialization)
 {
-  future_worker_initializer_ = std::async(std::launch::async,
-                                          &MonocularVOHandler::do_monocular_vo,
-                              this,
-                              std::ref(queue_view_to_initialization));
+    future_worker_vo_handler_ = std::async(std::launch::async,
+                                           &MonocularVOHandler::do_monocular_vo,
+                                           this,
+                                           std::ref(queue_view_to_initialization));
 }
 
 MonocularVOHandler::~MonocularVOHandler() {
   std::cout << "Shutdown MonocularVOHandlerHandler." << std::endl;
-  future_worker_initializer_.get();
+  future_worker_vo_handler_.get();
 }
 
 void
@@ -40,21 +40,19 @@ void
 MonocularVOHandler::do_monocular_vo(
     std::shared_ptr<LockFreeQueue> &queue_view_to_tracking)
 {
-  FrameSharedPtr frame(new Frame);
   cv::Mat R_curr = cv::Mat::eye(3,3, 6);
   cv::Mat t_curr = cv::Mat::zeros(3,1,6);
   double scale = 1;
   int count_local_landmark;
+  bool need_initialize = true;
 
   while (keep_visual_odometry_)
   {
     // Take frame from queue
-    while (!queue_view_to_tracking->try_dequeue(
-        frame)&& queue_view_to_tracking) {}
+    FrameSharedPtr frame(new Frame);
+    while (!queue_view_to_tracking->try_dequeue(frame)) {}
 
-    
-
-/*    if (frame->view_id == 0)  // First frame is the key-frame:
+    if (frame->view_id == 0)  // First frame is the key-frame:
     {
       frame->set_key_frame();
       Vision::extract_features(frame, params_);
@@ -132,7 +130,7 @@ MonocularVOHandler::do_monocular_vo(
         std::cout << "\n##########################################"
                      "##############################################" << std::endl;
       }
-      }*/
+      }
     //map_->print_frames_info();
     } // eof view_id > 0
 
