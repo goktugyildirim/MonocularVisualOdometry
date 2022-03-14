@@ -22,7 +22,7 @@ ament_auto_add_library(monocular_vo_node SHARED
   include/vision.hpp
   include/utils.hpp
   include/types.hpp
-  include/monocular_vo_handler.hpp
+  include/local_tracking_handler.hpp
   include/maps.hpp
   include/local_handler.hpp
   include/bundle_adjustment.hpp
@@ -35,7 +35,7 @@ ament_auto_add_library(monocular_vo_node SHARED
   src/monocular_vo_node.cpp
   src/vision.cpp
   src/utils.cpp
-  src/monocular_vo_handler.cpp
+  src/local_tracking_handler.cpp
   src/maps.cpp
   src/local_handler.cpp
   src/optimization.cpp

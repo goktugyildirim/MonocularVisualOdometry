@@ -5,9 +5,8 @@ namespace MonocularVO
 
 MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
-  : Node("bundle_adjustment_node", node_options),
-    view_id_(0),
-    params_(false, // The fastest combination : FAST - BRIEF - use modern: true
+  : Node("bundle_adjustment_node", node_options), m_view_id(0),
+      m_params(false, // The fastest combination : FAST - BRIEF - use modern: true
    "SHITOMASI","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
    500,999999,99999999,160,
@@ -16,23 +15,22 @@ MonocularVONode::MonocularVONode(
    20, 8,1)
 {
   // Initialization :::
-  queue_frame_to_initialization_ = std::make_shared<LockFreeQueue>(30);
-  MonocularVO::MonocularVOHandler::TypeCallbackTrack
+  m_queue_frame_to_initialization = std::make_shared<LockFreeQueue>(30);
+  MonocularVO::LocalTrackingHandler::TypeCallbackTrack
       callback_view_tracked =
       std::bind(
           &MonocularVONode::callback_view_tracked,
           this, std::placeholders::_1
       );
-  worker_initializer_ = std::make_shared<MonocularVOHandler>(
-      params_,
+  m_worker_local_tracker = std::make_shared<LocalTrackingHandler>(m_params,
       callback_view_tracked);
-  worker_initializer_->start(queue_frame_to_initialization_);
+  m_worker_local_tracker->start(m_queue_frame_to_initialization);
   // Publishers:
-  pub_match_view_ = this->create_publisher<ImageMsgT>(
+  m_pub_match_view = this->create_publisher<ImageMsgT>(
       "/image_match", 50);
   // eof Tracking
 
-  timer_provide_data_frame_ = this->create_wall_timer(
+  m_timer_provide_data_frame = this->create_wall_timer(
       std::chrono::milliseconds(40),
       std::bind(&MonocularVONode::CallbackImageProvider,
                 this));
@@ -41,15 +39,15 @@ MonocularVONode::MonocularVONode(
 void
 MonocularVONode::CallbackImageProvider()
 {
-  if (view_id_<840)
+  if (m_view_id <840)
   {
-    std::string img_name = "/home/goktug/projects/MonocularVisualOdometry/src/images/" +std::to_string(view_id_) + ".jpg";
+    std::string img_name = "/home/goktug/projects/MonocularVisualOdometry/src/images/" +std::to_string(m_view_id) + ".jpg";
     //std::string img_name = "/home/goktug/projects/MonocularVO/src/images/img.jpeg";
     cv::Mat img = imread(
         img_name,
         cv::IMREAD_COLOR);
 
-    if (view_id_ == 0)
+    if (m_view_id == 0)
     std::cout << "Image x:" << img.cols << " y:"  << img.rows << std::endl;
 
 
@@ -61,9 +59,7 @@ MonocularVONode::CallbackImageProvider()
     if (use_undistorted_img)
     {
       cv::Mat img_u;
-      cv::undistort(img, img_u,
-                    params_.K,
-                    params_.mat_dist_coeff);
+      cv::undistort(img, img_u, m_params.K, m_params.mat_dist_coeff);
       img = img_u;
     }
     cv::Mat img_gray;
@@ -74,26 +70,26 @@ MonocularVONode::CallbackImageProvider()
     Vision::make_img_3_channel(img_gray_with_kpts);
 
     cv::putText(img_gray_with_kpts,
-                std::to_string(view_id_),
+                std::to_string(m_view_id),
                 cv::Point(75, 400),
                 cv::FONT_HERSHEY_DUPLEX,
                 3, CV_RGB(0, 0, 255), 4);
 
     view->image_gray = img_gray;
-    view->view_id = view_id_;
+    view->view_id = m_view_id;
     view->width = img.cols;
     view->height = img.rows;
     view->image_gray_with_kpts = img_gray_with_kpts;
 
     //  Enqueues one item, but only if enough memory is already allocated
-    while (!queue_frame_to_initialization_->try_enqueue(view)) {
+    while (!m_queue_frame_to_initialization->try_enqueue(view)) {
       // spin until write a value
     }
 
   } else
-    view_id_ = 0;
+    m_view_id = 0;
 
-  view_id_++;
+  m_view_id++;
 
 }
 
@@ -107,10 +103,10 @@ MonocularVONode::callback_view_tracked(
   int x = 900;
   cv::Mat cv_img(y, x, CV_8UC(3));
   cv_img.setTo(cv::Scalar(255,255,255));
-  Utils::publish_image(pub_match_view_, cv_img,
+  Utils::publish_image(m_pub_match_view, cv_img,
                        this->get_clock()->now(), "world");
 */
-  Utils::publish_image(pub_match_view_, img_concat,
+  Utils::publish_image(m_pub_match_view, img_concat,
    this->get_clock()->now(), "world");
 }
 

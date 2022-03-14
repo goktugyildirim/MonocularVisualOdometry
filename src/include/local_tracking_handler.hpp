@@ -23,42 +23,36 @@
 namespace MonocularVO
 {
 
-class MonocularVOHandler
-{
+class LocalTrackingHandler {
  public:
 
   using FrameSharedPtr = std::shared_ptr<Frame>;
-  using Batch = std::vector<FrameSharedPtr>;
   using LockFreeQueue = moodycamel::ConcurrentQueue<std::shared_ptr<Frame>>;
   using LockFreeQueueBatch = moodycamel::ConcurrentQueue<Batch>;
   using TypeCallbackTrack = std::function<void (const cv::Mat& img_concat)>;
 
-  using MapSharedPtr = std::shared_ptr<Map>;
+  TypeCallbackTrack send_to_ros_interface;
 
-  TypeCallbackTrack provide_;
-
-  explicit MonocularVOHandler(
+  explicit LocalTrackingHandler(
       const MonocularVO::Params& params,
       TypeCallbackTrack&  callback_view_tracked);
 
-  virtual ~MonocularVOHandler();
+  virtual ~LocalTrackingHandler();
 
   void start(std::shared_ptr<LockFreeQueue>& queue_view_to_initialization);
 
   void stop();
 
  private:
-  MonocularVO::Params params_;
-  std::future<void> future_worker_vo_handler_;
-  std::atomic_bool keep_visual_odometry_;
+  MonocularVO::Params m_params;
+  std::future<void> m_future_worker_local_tracking_handler;
+  std::atomic_bool m_keep_tracking;
 
-  MapSharedPtr map_;
-
-  void do_monocular_vo(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
+  void track(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
 
   void try_send_batch_to_local_handler(Batch& batch);
-  std::shared_ptr<LocalHandler> worker_local_handler_;
-  std::shared_ptr<LockFreeQueueBatch> queue_batch_to_local_handler_;
+  std::shared_ptr<LocalHandler> m_worker_local_handler;
+  std::shared_ptr<LockFreeQueueBatch> m_queue_batch_to_local_handler;
 
 
 

@@ -6,7 +6,7 @@
 #include "view.hpp"
 #include "utils.hpp"
 #include "types.hpp"
-#include "monocular_vo_handler.hpp"
+#include "local_tracking_handler.hpp"
 
 #include <string>
 #include <memory>
@@ -28,20 +28,20 @@ public:
     const rclcpp::NodeOptions & node_options);
 
 private:
-  MonocularVO::Params params_;
+  MonocularVO::Params m_params;
 
   // Tracking:
-  std::shared_ptr<LockFreeQueue> queue_frame_to_initialization_;
+  std::shared_ptr<LockFreeQueue> m_queue_frame_to_initialization;
   void callback_view_tracked(
       const cv::Mat& img_concat);
-  std::shared_ptr<MonocularVOHandler> worker_initializer_;
-  rclcpp::Publisher<ImageMsgT>::SharedPtr pub_match_view_;
+  std::shared_ptr<LocalTrackingHandler> m_worker_local_tracker;
+  rclcpp::Publisher<ImageMsgT>::SharedPtr m_pub_match_view;
 
   // Timer to provide DataFrame:
-  rclcpp::TimerBase::SharedPtr timer_provide_data_frame_;
+  rclcpp::TimerBase::SharedPtr m_timer_provide_data_frame;
   void CallbackImageProvider();
-  int view_id_;
-  std::mutex door_;
+  int m_view_id;
+  std::mutex m_mutex;
 
 };
 

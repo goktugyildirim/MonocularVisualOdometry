@@ -48,7 +48,7 @@ MonocularVO::LocalHandler::handle(
     //std::cout << "Batch is received to local handler." << std::endl;
     auto start = high_resolution_clock::now();
     LocalObservations local_observations = build_local_observations(batch);
-    MonocularVO::Optimization::LocalObservations local_observations_opt = Optimization::solve_local_ba(local_observations, params_.K);
+    MonocularVO::Optimization::LocalObservations local_observations_opt = Optimization::solve_local_ba(local_observations, m_params.K);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
     std::cout << "Time taken by function: "
@@ -66,7 +66,7 @@ MonocularVO::LocalHandler::handle(
       t = (local_observations_opt.camera_poses[i][3], local_observations_opt.camera_poses[i][4], local_observations_opt.camera_poses[i][5]);
       for (int j=0; j<batch[i]->keypoints_pt.size(); j++)
       {
-        cv::Point2d projected_point = Utils::project_point(R, t, params_.K, local_observations_opt.points3D[j]);
+        cv::Point2d projected_point = Utils::project_point(R, t, m_params.K, local_observations_opt.points3D[j]);
         cv::Point2d real_point = batch[i]->keypoints_pt[j];
         reprojection_err += sqrt(pow(real_point.x - projected_point.x, 2) + pow(real_point.y - projected_point.y, 2));
         //std::cout << "Camera id: " << i << " | projected point: " << projected_point << " | real_point:" << real_point << std::endl;
@@ -89,7 +89,7 @@ MonocularVO::LocalHandler::handle(
     FrameSharedPtr prev_key_frame = map_local_->get_prev_key_frame();
     FrameSharedPtr curr_key_frame = map_local_->get_curr_key_frame();
 
-    MatchKeyFrameSharedPtr match = Vision::match_key_frames(params_, prev_key_frame, curr_key_frame);
+    MatchKeyFrameSharedPtr match = Vision::match_key_frames(m_params, prev_key_frame, curr_key_frame);
 
     std::cout << "Initialization is done." << std::endl;
     std::cout << "####################################"
