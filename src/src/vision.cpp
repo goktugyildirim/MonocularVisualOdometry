@@ -420,7 +420,6 @@ MonocularVO::Vision::extract_features(
   std::cout << "Feature extraction tooks: "
        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
        << " millisecond." << std::endl;
-
 }
 
 /*

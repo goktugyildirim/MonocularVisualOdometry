@@ -26,6 +26,7 @@ public:
   int m_id_last_frame;
   FrameSharedPtr m_curr_frame;
   FrameSharedPtr m_prev_frame;
+  FrameSharedPtr m_ref_frame;
   MonocularVO::Params m_params;
 
   explicit Frames(MonocularVO::Params  params);
@@ -34,7 +35,7 @@ public:
   FrameSharedPtr get_curr_frame();
   FrameSharedPtr get_prev_frame();
   void set_curr_frame_is_ref_frame();
-
+  FrameSharedPtr get_ref_frame();
 
   void print_info();
 

@@ -38,10 +38,9 @@ LocalTrackingHandler::~LocalTrackingHandler()
 void LocalTrackingHandler::stop(){ m_keep_tracking = false;}
 
 
-
 void
 LocalTrackingHandler::track_frames(
-    std::shared_ptr<LockFreeQueue> &queue_view_to_tracking)
+  std::shared_ptr<LockFreeQueue> &queue_view_to_tracking)
 {
   while (m_keep_tracking)
   {
@@ -71,8 +70,8 @@ LocalTrackingHandler::track_frames(
 
     std::cout << "###########################"
                  "##########################" <<
+                 "##########################" <<
                  "##########################" << std::endl;
-
 
 
   } // eof m_keep_tracking
@@ -106,10 +105,10 @@ LocalTrackingHandler::track_p2d_optical_flow(const int& window_size)
                            3, termcrit,
                            0, 0.001);
   auto end = std::chrono::steady_clock::now();
-  std::cout << "Optical flow tooks: "
+  /*std::cout << "Optical flow tooks: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-            << " millisecond." << std::endl;
-  // Remove loss keypoints:
+            << " millisecond." << std::endl;*/
+  // Remove lost keypoints:
   int x = prev_frame->width;
   int y = prev_frame->height;
   int indexCorrection = 0;
@@ -119,6 +118,9 @@ LocalTrackingHandler::track_p2d_optical_flow(const int& window_size)
         i- indexCorrection);
     if ((status.at(i) == 0)||(pt.x<0)||(pt.y<0)||pt.x>x||pt.y>y)
     {
+        FrameSharedPtr ref_frame = m_frames.get_ref_frame();
+        ref_frame->keypoints_p2d.erase(
+            ref_frame->keypoints_p2d.begin() + i - indexCorrection);
         curr_frame->keypoints_p2d.erase(
           curr_frame->keypoints_p2d.begin() + i - indexCorrection);
       indexCorrection++;
