@@ -17,13 +17,13 @@ ament_auto_find_build_dependencies()
 
 ament_auto_add_library(monocular_vo_node SHARED
   include/monocular_vo_node.hpp
-  include/view.hpp
+  include/frame.hpp
   include/params.hpp
   include/vision.hpp
   include/utils.hpp
   include/types.hpp
   include/local_tracking_handler.hpp
-  include/maps.hpp
+  include/frames.hpp
   include/local_handler.hpp
   include/bundle_adjustment.hpp
   include/optimization.hpp
@@ -36,7 +36,7 @@ ament_auto_add_library(monocular_vo_node SHARED
   src/vision.cpp
   src/utils.cpp
   src/local_tracking_handler.cpp
-  src/maps.cpp
+  src/frames.cpp
   src/local_handler.cpp
   src/optimization.cpp
   )

@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <mutex>
-#include <view.hpp>
+#include <frame.hpp>
 #include <mutex>
 #include <deque>
 #include <opencv4/opencv2/highgui/highgui.hpp>

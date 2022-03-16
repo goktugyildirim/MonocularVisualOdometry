@@ -28,7 +28,7 @@ Optimization::solve_local_ba(MonocularVO::LocalObservations& local_observations,
   std::vector<double*> optimized_cam_poses;
   std::vector<double*> optimized_points3D;
 
-  for (size_t j = 0; j < xs.size(); j++) //  frames
+  for (size_t j = 0; j < xs.size(); j++) //  Frames
   {
     double *camera;
     for (size_t i = 0; i < xs[j].size(); i++) // points

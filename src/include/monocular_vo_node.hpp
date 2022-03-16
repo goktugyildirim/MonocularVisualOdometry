@@ -3,7 +3,7 @@
 #include <rclcpp_components/register_node_macro.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
-#include "view.hpp"
+#include "frame.hpp"
 #include "utils.hpp"
 #include "types.hpp"
 #include "local_tracking_handler.hpp"

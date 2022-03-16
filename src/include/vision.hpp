@@ -1,15 +1,15 @@
 #ifndef BUILD_SRC_INCLUDE_VISION_HPP_
 #define BUILD_SRC_INCLUDE_VISION_HPP_
 
-#include <maps.hpp>
+#include <frames.hpp>
 #include <iostream>
 #include <thread>
 #include <params.hpp>
-#include <view.hpp>
+#include <frame.hpp>
 #include "types.hpp"
 #include "utils.hpp"
 #include "utils.hpp"
-#include "maps.hpp"
+#include "frames.hpp"
 #include <chrono>
 
 #include <opencv2/core.hpp>
@@ -34,7 +34,7 @@ class Vision
 {
  public:
 
-  using MapInitialSharedPtr = std::shared_ptr<Map>;
+  using MapInitialSharedPtr = std::shared_ptr<Frames>;
   using MatchKeyFrameSharedPtr = std::shared_ptr<MatchKeyFrame>;
 
 
@@ -123,7 +123,7 @@ class Vision
 
 
   static void
-  extract_features(FrameSharedPtr& view,
+  extract_features(FrameSharedPtr& frame,
                    const MonocularVO::Params& params);
 
 

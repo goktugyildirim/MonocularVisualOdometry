@@ -6,15 +6,15 @@ namespace MonocularVO
 MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
   : Node("bundle_adjustment_node", node_options), m_view_id(0),
-      m_params(false, // The fastest combination : FAST - BRIEF - use modern: true
-   "SHITOMASI","BRIEF",
+      m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
+   "FAST","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
    500,999999,99999999,160,
    // The most important parameters:
-   250, 25,
+   250, 50,
    20, 8,1)
 {
-  // Initialization :::
+  // Local Tracking ::
   m_queue_frame_to_initialization = std::make_shared<LockFreeQueue>(30);
   MonocularVO::LocalTrackingHandler::TypeCallbackTrack
       callback_view_tracked =
@@ -28,7 +28,7 @@ MonocularVONode::MonocularVONode(
   // Publishers:
   m_pub_match_view = this->create_publisher<ImageMsgT>(
       "/image_match", 50);
-  // eof Tracking
+  // eof Local Tracking
 
   m_timer_provide_data_frame = this->create_wall_timer(
       std::chrono::milliseconds(40),
@@ -76,7 +76,7 @@ MonocularVONode::CallbackImageProvider()
                 3, CV_RGB(0, 0, 255), 4);
 
     view->image_gray = img_gray;
-    view->view_id = m_view_id;
+    view->frame_id = m_view_id;
     view->width = img.cols;
     view->height = img.rows;
     view->image_gray_with_kpts = img_gray_with_kpts;

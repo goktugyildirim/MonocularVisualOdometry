@@ -64,10 +64,10 @@ MonocularVO::LocalHandler::handle(
       cv::Rodrigues(rvec, R);
       cv::Mat t(3, 1, 6);
       t = (local_observations_opt.camera_poses[i][3], local_observations_opt.camera_poses[i][4], local_observations_opt.camera_poses[i][5]);
-      for (int j=0; j<batch[i]->keypoints_pt.size(); j++)
+      for (int j=0; j<batch[i]->keypoints_p2d.size(); j++)
       {
         cv::Point2d projected_point = Utils::project_point(R, t, m_params.K, local_observations_opt.points3D[j]);
-        cv::Point2d real_point = batch[i]->keypoints_pt[j];
+        cv::Point2d real_point = batch[i]->keypoints_p2d[j];
         reprojection_err += sqrt(pow(real_point.x - projected_point.x, 2) + pow(real_point.y - projected_point.y, 2));
         //std::cout << "Camera id: " << i << " | projected point: " << projected_point << " | real_point:" << real_point << std::endl;
       }
@@ -156,14 +156,14 @@ MonocularVO::LocalHandler::build_local_observations(Batch& batch)
              it!=batch.end(); it++)
         {
           FrameSharedPtr view = *it;
-          view->keypoints_pt.erase(view->keypoints_pt.begin() + i - indexCorrection);
+          view->keypoints_p2d.erase(view->keypoints_p2d.begin() + i - indexCorrection);
         }
         indexCorrection++;
       }
     }
   }
   std::cout << "After batch epipolar "
-   "refinement kpt count:" << batch.back()->keypoints_pt.size()
+   "refinement kpt count:" << batch.back()->keypoints_p2d.size()
    << "\n" << std::endl;
 
   // Assumption
@@ -190,8 +190,8 @@ MonocularVO::LocalHandler::build_local_observations(Batch& batch)
   cv::Mat P0 = params_.K * cv::Mat::eye(3, 4, 6);
   cv::Mat P1 = params_.K * Rt, mat_points3D;
   cv::triangulatePoints(P0, P1,
-                        frame_first->keypoints_pt,
-                        frame_second->keypoints_pt,
+                        frame_first->keypoints_p2d,
+                        frame_second->keypoints_p2d,
                         mat_points3D);
   std::vector<cv::Point3d> vector_points3D(mat_points3D.cols);
   mat_points3D.row(0) = mat_points3D.row(0) / mat_points3D.row(3);
@@ -206,7 +206,7 @@ MonocularVO::LocalHandler::build_local_observations(Batch& batch)
     for (int i = 2; i < batch.size(); i++)
     {
       cv::Mat rvec_, t_;
-      cv::solvePnP(vector_points3D, batch[i]->keypoints_pt,
+      cv::solvePnP(vector_points3D, batch[i]->keypoints_p2d,
                    params_.K, cv::noArray(), rvec_, t_);
       cameras[i] = cv::Vec6d {rvec_.at<double>(0), rvec_.at<double>(1),
                               rvec_.at<double>(2), t_.at<double>(0,0),
@@ -224,10 +224,10 @@ MonocularVO::LocalHandler::build_local_observations(Batch& batch)
     cv::Rodrigues(rvec, R);
     cv::Mat t(3, 1, 6);
     t = (cameras[i][3], cameras[i][4], cameras[i][5]);
-    for (int j=0; j<batch[i]->keypoints_pt.size(); j++)
+    for (int j=0; j<batch[i]->keypoints_p2d.size(); j++)
     {
       cv::Point2d projected_point = Utils::project_point(R, t, params_.K, vector_points3D[j]);
-      cv::Point2d real_point = batch[i]->keypoints_pt[j];
+      cv::Point2d real_point = batch[i]->keypoints_p2d[j];
       reprojection_err += sqrt(pow(real_point.x - projected_point.x, 2) + pow(real_point.y - projected_point.y, 2));
       //std::cout << "Camera id: " << i << " | projected point: " << projected_point << " | real_point:" << real_point << std::endl;
     }
@@ -240,7 +240,7 @@ MonocularVO::LocalHandler::build_local_observations(Batch& batch)
   std::vector<std::vector<cv::Point2d>> xs;
   for (FrameSharedPtr &frame : batch) {
     std::vector<cv::Point2d> pts;
-    for (const cv::Point2f &pt :frame->keypoints_pt) {
+    for (const cv::Point2f &pt :frame->keypoints_p2d) {
       pts.push_back(pt);
     }
     xs.push_back(pts);

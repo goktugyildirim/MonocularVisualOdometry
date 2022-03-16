@@ -4,8 +4,8 @@
 #include "types.hpp"
 #include "params.hpp"
 #include <iostream>
-#include "view.hpp"
-#include "maps.hpp"
+#include "frame.hpp"
+#include "frames.hpp"
 #include <future>
 #include <vision.hpp>
 #include "optimization.hpp"

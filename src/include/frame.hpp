@@ -1,5 +1,5 @@
-#ifndef BUILD_SRC_INCLUDE_VIEW_HPP_
-#define BUILD_SRC_INCLUDE_VIEW_HPP_
+#ifndef BUILD_SRC_INCLUDE_FRAME_HPP_
+#define BUILD_SRC_INCLUDE_FRAME_HPP_
 
 #include <opencv4/opencv2/highgui/highgui.hpp>
 #include <opencv2/core.hpp>
@@ -14,12 +14,13 @@ class Frame
   cv::Mat img_colored;
   cv::Mat image_gray;
   cv::Mat image_gray_with_kpts;
-  int view_id{};
+  int frame_id{};
   int height{};
   int width{};
   std::vector<cv::KeyPoint> keypoints{};
   cv::Mat descriptors;
-  bool is_key_frame = false;
+  bool is_ref_frame = false;
+  bool is_keyframe = false;
   bool is_img_deleted = false;
   bool is_feature_extracted = false;
 
@@ -29,13 +30,25 @@ class Frame
   cv::Mat tf_t_world_to_cam;
   cv::Vec6d pose_cam_6dof_world_to_camera;
 
-  std::vector<cv::Point2f> keypoints_pt{};
+  std::vector<cv::Point2f> keypoints_p2d{};
   std::vector<cv::Vec3d> points3D;
+
+  void
+  set_ref_frame()
+  {
+    this->is_ref_frame = true;
+    this->is_keyframe = true;
+    cv::putText(image_gray_with_kpts,
+                "Ref Frame",
+                cv::Point(75, 500),
+                cv::FONT_HERSHEY_DUPLEX,
+                3, CV_RGB(0, 0, 255), 4);
+  }
 
   void
   set_key_frame()
   {
-    this->is_key_frame = true;
+    this->is_keyframe = true;
     cv::putText(image_gray_with_kpts,
                 "Key Frame",
                 cv::Point(75, 500),
@@ -43,12 +56,7 @@ class Frame
                 3, CV_RGB(0, 0, 255), 4);
   }
 
-  void
-  void_set_odom_pose(const cv::Mat& R,
-                     const cv::Mat& t)
-  {
 
-  }
 
  private:
 
@@ -56,4 +64,4 @@ class Frame
 
 }
 
-#endif  // BUILD_SRC_INCLUDE_VIEW_HPP_
+#endif // BUILD_SRC_INCLUDE_FRAME_HPP_

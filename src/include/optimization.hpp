@@ -6,7 +6,7 @@
 #include "ceres/rotation.h"
 #include "types.hpp"
 #include "vision.hpp"
-#include "view.hpp"
+#include "frame.hpp"
 
 namespace MonocularVO
 {
