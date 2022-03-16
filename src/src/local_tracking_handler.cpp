@@ -112,17 +112,24 @@ LocalTrackingHandler::track_p2d_optical_flow(const int& window_size)
   int x = prev_frame->width;
   int y = prev_frame->height;
   int indexCorrection = 0;
+
+  std::vector<cv::Point2f> deneme_ = prev_frame->keypoints_p2d;
+
+
   for( int i=0; i<status.size(); i++)
   {
     cv::Point2f pt = curr_frame->keypoints_p2d.at(
         i- indexCorrection);
     if ((status.at(i) == 0)||(pt.x<0)||(pt.y<0)||pt.x>x||pt.y>y)
     {
-        FrameSharedPtr ref_frame = m_frames.get_ref_frame();
-        ref_frame->keypoints_p2d.erase(
-            ref_frame->keypoints_p2d.begin() + i - indexCorrection);
-        curr_frame->keypoints_p2d.erase(
-          curr_frame->keypoints_p2d.begin() + i - indexCorrection);
+      FrameSharedPtr ref_frame = m_frames.get_ref_frame();
+      ref_frame->keypoints_p2d.erase(
+          ref_frame->keypoints_p2d.begin() + i - indexCorrection);
+
+      // Remove lost points in current frame
+      curr_frame->keypoints_p2d.erase(
+        curr_frame->keypoints_p2d.begin() + i - indexCorrection);
+
       indexCorrection++;
     }
   }
