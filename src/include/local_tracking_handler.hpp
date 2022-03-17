@@ -49,7 +49,8 @@ class LocalTrackingHandler {
   std::atomic_bool m_keep_tracking;
 
   void track_frames(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
-  void track_p2d_optical_flow(const int& window_size);
+  void track_p2d_optical_flow(const int& window_size,
+                              std::vector<int>& tracked_p3d_ids);
   // Important member variables:
 /*  std::atomic_bool m_need_init;
   std::atomic_bool m_is_init_done;*/

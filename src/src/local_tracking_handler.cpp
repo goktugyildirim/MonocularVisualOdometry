@@ -62,7 +62,7 @@ LocalTrackingHandler::track_frames(
     // Tracking spins:
     if (m_is_ref_frame_selected)
     {
-      track_p2d_optical_flow(25);
+      track_p2d_optical_flow(25,m_tracked_p3d_ids);
     }
 
     // Each new frame comes:
@@ -80,7 +80,8 @@ LocalTrackingHandler::track_frames(
 
 
 void
-LocalTrackingHandler::track_p2d_optical_flow(const int& window_size)
+LocalTrackingHandler::track_p2d_optical_flow(const int& window_size,
+  std::vector<int>& tracked_p3d_ids)
 {
   FrameSharedPtr prev_frame = m_frames.get_prev_frame();
   FrameSharedPtr curr_frame = m_frames.get_curr_frame();
@@ -112,9 +113,6 @@ LocalTrackingHandler::track_p2d_optical_flow(const int& window_size)
   int x = prev_frame->width;
   int y = prev_frame->height;
   int indexCorrection = 0;
-
-  std::vector<cv::Point2f> deneme_ = prev_frame->keypoints_p2d;
-
 
   for( int i=0; i<status.size(); i++)
   {
