@@ -49,8 +49,9 @@ class LocalTrackingHandler {
   std::atomic_bool m_keep_tracking;
 
   void track_frames(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
-  void track_observations_optical_flow(const int& window_size);
-  void show_tracking(const int& downs_ratio);
+  void track_observations_optical_flow(const int& window_size, const double&repr_threshold);
+  void show_tracking(const float& downs_ratio);
+  bool is_tracking_ok();
 
   std::atomic_bool m_is_init_done;
   std::atomic_bool m_is_ref_frame_selected;

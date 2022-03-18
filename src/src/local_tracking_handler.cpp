@@ -43,7 +43,7 @@ LocalTrackingHandler::track_frames(
 {
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
   cv::moveWindow("Local Feature Tracking", 20,20);
-  int min_kpt_count_to_track = 1270;
+  int min_kpt_count_to_track = 900;
 
   while (m_keep_tracking)
   {
@@ -68,14 +68,14 @@ LocalTrackingHandler::track_frames(
     // Tracking spins:
     if (m_is_ref_frame_selected)
     {
-      track_observations_optical_flow(25);
-      show_tracking(2);
+      track_observations_optical_flow(25, 1);
+      show_tracking(1.25);
 
       if (m_tracked_p2d_ids.size() > min_kpt_count_to_track)
       {
         // TODO:: if(is_init_done) {} else {}
 
-        
+
       } else if (m_tracked_p2d_ids.size() <= min_kpt_count_to_track)
       {
         m_frames.set_curr_frame_is_ref_frame();
@@ -93,6 +93,7 @@ LocalTrackingHandler::track_frames(
     }
     // Each new frame comes:
     //m_frames.print_info();
+    std::cout << "Reference frame id: " << m_frames.get_ref_frame()->frame_id << std::endl;
     std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
     std::cout << "###########################"
                  "##########################" <<
@@ -105,7 +106,8 @@ LocalTrackingHandler::track_frames(
 
 
 void
-LocalTrackingHandler::track_observations_optical_flow(const int& window_size)
+LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
+                                                      const double&repr_threshold)
 {
   FrameSharedPtr prev_frame = m_frames.get_prev_frame();
   FrameSharedPtr curr_frame = m_frames.get_curr_frame();
@@ -161,13 +163,40 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size)
       prev_frame->keypoints_p2d,
       curr_frame->keypoints_p2d,
       cv::FM_RANSAC,
-      1, 0.99, 500,
+      repr_threshold,
+      0.99, 500,
       inliers_F);
+  // Calculate Essential matrix to refine tracked keypoints:
+  cv::Mat inliers_E;
+  cv::Mat E = cv::findEssentialMat(prev_frame->keypoints_p2d,
+                                   curr_frame->keypoints_p2d,
+                                   m_params.K,
+                                   cv::RANSAC, 0.99,
+                                   repr_threshold, inliers_E);
 
+  // Remove bad points epipolar constraints:
+  indexCorrection = 0;
+  for(size_t i=0; i<inliers_E.rows; i++)
+  {
+    if (inliers_F.at<bool>(i,0) == false or
+        inliers_E.at<bool>(i,0) == false)
+    {
+      // Remove lost points in ref frame keypoint ids
+      m_tracked_p2d_ids.erase(
+          m_tracked_p2d_ids.begin() + i - indexCorrection);
+      // Remove lost points in prev frane
+      prev_frame->keypoints_p2d.erase(
+          prev_frame->keypoints_p2d.begin() + i - indexCorrection);
+      // Remove lost points in current frame
+      curr_frame->keypoints_p2d.erase(
+          curr_frame->keypoints_p2d.begin() + i - indexCorrection);
+      indexCorrection++;
+    }
+  }
 }
 
 void
-LocalTrackingHandler::show_tracking(const int& downs_ratio)
+LocalTrackingHandler::show_tracking(const float& downs_ratio)
 {
   cv::Mat img_show;
   cv::resize(m_frames.get_curr_frame()->image_gray_with_kpts,
@@ -180,7 +209,12 @@ LocalTrackingHandler::show_tracking(const int& downs_ratio)
   cv::waitKey(1);
 }
 
-
+bool
+LocalTrackingHandler::is_tracking_ok()
+{
+  
+  return false;
+}
 
 /*
 
