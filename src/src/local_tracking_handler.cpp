@@ -37,11 +37,13 @@ LocalTrackingHandler::~LocalTrackingHandler()
 
 void LocalTrackingHandler::stop(){ m_keep_tracking = false;}
 
-
 void
 LocalTrackingHandler::track_frames(
   std::shared_ptr<LockFreeQueue> &queue_view_to_tracking)
 {
+  cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
+  cv::moveWindow("Local Feature Tracking", 20,20);
+
   while (m_keep_tracking)
   {
     // Take curr_frame from queue
@@ -62,26 +64,23 @@ LocalTrackingHandler::track_frames(
     // Tracking spins:
     if (m_is_ref_frame_selected)
     {
-      track_p2d_optical_flow(25,m_tracked_p3d_ids);
+      track_observations_optical_flow(25);
+      show_tracking(3);
     }
-
     // Each new frame comes:
-    m_frames.print_info();
-
+    //m_frames.print_info();
     std::cout << "###########################"
                  "##########################" <<
                  "##########################" <<
                  "##########################" << std::endl;
-
-
   } // eof m_keep_tracking
 
+  cv::destroyAllWindows();
 }
 
 
 void
-LocalTrackingHandler::track_p2d_optical_flow(const int& window_size,
-  std::vector<int>& tracked_p3d_ids)
+LocalTrackingHandler::track_observations_optical_flow(const int& window_size)
 {
   FrameSharedPtr prev_frame = m_frames.get_prev_frame();
   FrameSharedPtr curr_frame = m_frames.get_curr_frame();
@@ -113,26 +112,47 @@ LocalTrackingHandler::track_p2d_optical_flow(const int& window_size,
   int x = prev_frame->width;
   int y = prev_frame->height;
   int indexCorrection = 0;
-
   for( int i=0; i<status.size(); i++)
   {
     cv::Point2f pt = curr_frame->keypoints_p2d.at(
         i- indexCorrection);
     if ((status.at(i) == 0)||(pt.x<0)||(pt.y<0)||pt.x>x||pt.y>y)
     {
-      FrameSharedPtr ref_frame = m_frames.get_ref_frame();
-      ref_frame->keypoints_p2d.erase(
-          ref_frame->keypoints_p2d.begin() + i - indexCorrection);
-
+      // Tracked point ids ref frane keypoints
+      prev_frame->keypoints_p2d.erase(
+          prev_frame->keypoints_p2d.begin() + i - indexCorrection);
       // Remove lost points in current frame
       curr_frame->keypoints_p2d.erase(
         curr_frame->keypoints_p2d.begin() + i - indexCorrection);
-
       indexCorrection++;
     }
   }
+  // Calculate Fundamental Matrix to refine tracked keypoints:
+  cv::Mat inliers_F;
+  cv::Mat F = cv::findFundamentalMat(
+      prev_frame->keypoints_p2d,
+      curr_frame->keypoints_p2d,
+      cv::FM_RANSAC,
+      1, 0.99, 500,
+      inliers_F);
 
 }
+
+void
+LocalTrackingHandler::show_tracking(const int& downs_ratio)
+{
+  cv::Mat img_show;
+  cv::resize(m_frames.get_curr_frame()->image_gray_with_kpts,
+             img_show,
+             cv::Size(m_frames.get_curr_frame()->width/downs_ratio,
+                      m_frames.get_curr_frame()->height/downs_ratio),
+             cv::INTER_LINEAR);
+  cv::imshow("Local Feature Tracking",
+             img_show);
+  cv::waitKey(1);
+}
+
+
 
 /*
 
@@ -162,9 +182,6 @@ void LocalTrackingHandler::try_send_batch_to_local_handler(Batch& batch)
   }
 }
 */
-
-
-
 
 
 } // end MonocularVO

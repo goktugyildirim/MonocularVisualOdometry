@@ -15,7 +15,7 @@ MonocularVONode::MonocularVONode(
    20, 8,1)
 {
   // Local Tracking ::
-  m_queue_frame_to_initialization = std::make_shared<LockFreeQueue>(30);
+  m_queue_frame_to_initialization = std::make_shared<LockFreeQueue>(9999999);
   MonocularVO::LocalTrackingHandler::TypeCallbackTrack
       callback_view_tracked =
       std::bind(
@@ -30,8 +30,9 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
+  int rate_img_send = 40;
   m_timer_provide_data_frame = this->create_wall_timer(
-      std::chrono::milliseconds(40),
+      std::chrono::milliseconds(rate_img_send),
       std::bind(&MonocularVONode::CallbackImageProvider,
                 this));
 }
