@@ -51,11 +51,15 @@ class LocalTrackingHandler {
   void track_frames(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
   void track_observations_optical_flow(const int& window_size);
   void show_tracking(const int& downs_ratio);
-  // Important member variables:
-/*  std::atomic_bool m_need_init;
-  std::atomic_bool m_is_init_done;*/
+
+  std::atomic_bool m_is_init_done;
   std::atomic_bool m_is_ref_frame_selected;
+
+  std::vector<cv::Point2f> m_ref_keypoints;
+  std::vector<int> m_tracked_p2d_ids;
+
   std::vector<int> m_tracked_p3d_ids;
+
   Frames m_frames;
 
 

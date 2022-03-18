@@ -10,7 +10,7 @@ const MonocularVO::Params& params,
 TypeCallbackTrack &callback_view_tracked)
 : send_to_ros_interface{std::move(callback_view_tracked)},
   m_keep_tracking(true), m_params(params), m_frames(params),
-  m_is_ref_frame_selected(false)
+  m_is_ref_frame_selected(false), m_is_init_done(false)
 {
   // Local Handler Stuff:
   // * Local handler solves local BA problem
@@ -43,6 +43,7 @@ LocalTrackingHandler::track_frames(
 {
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
   cv::moveWindow("Local Feature Tracking", 20,20);
+  int min_kpt_count_to_track = 1270;
 
   while (m_keep_tracking)
   {
@@ -57,18 +58,42 @@ LocalTrackingHandler::track_frames(
     {
       m_frames.set_curr_frame_is_ref_frame();
       m_is_ref_frame_selected = true;
-      Vision::extract_features(curr_frame, m_params);
+      m_tracked_p2d_ids.clear();
+      Vision::extract_features(curr_frame, m_ref_keypoints, m_params);
+      m_tracked_p2d_ids.resize(m_ref_keypoints.size());
+      std::iota (std::begin(m_tracked_p2d_ids),
+            std::end(m_tracked_p2d_ids), 0);
       continue;
     }
-
     // Tracking spins:
     if (m_is_ref_frame_selected)
     {
       track_observations_optical_flow(25);
-      show_tracking(3);
+      show_tracking(2);
+
+      if (m_tracked_p2d_ids.size() > min_kpt_count_to_track)
+      {
+        // TODO:: if(is_init_done) {} else {}
+
+        
+      } else if (m_tracked_p2d_ids.size() <= min_kpt_count_to_track)
+      {
+        m_frames.set_curr_frame_is_ref_frame();
+        m_is_ref_frame_selected = true;
+        m_tracked_p2d_ids.clear();
+        Vision::extract_features(curr_frame, m_ref_keypoints, m_params);
+        m_tracked_p2d_ids.resize(m_ref_keypoints.size());
+        std::iota (std::begin(m_tracked_p2d_ids),
+                  std::end(m_tracked_p2d_ids), 0);
+        m_is_init_done = false;
+        std::cout << "New local map detected." << std::endl;
+      }
+
+
     }
     // Each new frame comes:
     //m_frames.print_info();
+    std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
     std::cout << "###########################"
                  "##########################" <<
                  "##########################" <<
@@ -118,7 +143,10 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size)
         i- indexCorrection);
     if ((status.at(i) == 0)||(pt.x<0)||(pt.y<0)||pt.x>x||pt.y>y)
     {
-      // Tracked point ids ref frane keypoints
+      // Remove lost points in ref frame keypoint ids
+      m_tracked_p2d_ids.erase(
+          m_tracked_p2d_ids.begin() + i - indexCorrection);
+      // Remove lost points in prev frane
       prev_frame->keypoints_p2d.erase(
           prev_frame->keypoints_p2d.begin() + i - indexCorrection);
       // Remove lost points in current frame
