@@ -43,7 +43,6 @@ LocalTrackingHandler::track_frames(
 {
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
   cv::moveWindow("Local Feature Tracking", 20,20);
-  int min_kpt_count_to_track = 900;
 
   while (m_keep_tracking)
   {
@@ -71,12 +70,12 @@ LocalTrackingHandler::track_frames(
       track_observations_optical_flow(25, 1);
       show_tracking(1.25);
 
-      if (m_tracked_p2d_ids.size() > min_kpt_count_to_track)
+      if (m_tracked_p2d_ids.size() > m_params.count_min_tracked)
       {
         // TODO:: if(is_init_done) {} else {}
 
 
-      } else if (m_tracked_p2d_ids.size() <= min_kpt_count_to_track)
+      } else if (m_tracked_p2d_ids.size() <=  m_params.count_min_tracked)
       {
         m_frames.set_curr_frame_is_ref_frame();
         m_is_ref_frame_selected = true;
@@ -212,7 +211,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
 bool
 LocalTrackingHandler::is_tracking_ok()
 {
-  
+
   return false;
 }
 

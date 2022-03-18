@@ -11,7 +11,7 @@ MonocularVONode::MonocularVONode(
    "BruteForce-Hamming","SEL_KNN",
    500,999999,99999999,160,
    // The most important parameters:
-   250, 50,
+   50, 50,
    20, 8,1)
 {
   // Local Tracking ::
@@ -30,9 +30,9 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
-  int rate_img_send = 500; // ms
+  int send_img_hz = 30; // Hz
   m_timer_provide_data_frame = this->create_wall_timer(
-      std::chrono::milliseconds(rate_img_send),
+      std::chrono::milliseconds(1/send_img_hz),
       std::bind(&MonocularVONode::CallbackImageProvider,
                 this));
 }

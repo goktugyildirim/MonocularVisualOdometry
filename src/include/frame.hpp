@@ -39,7 +39,7 @@ class Frame
     this->is_ref_frame = true;
     this->is_keyframe = true;
     cv::putText(image_gray_with_kpts,
-                "Ref Frame",
+                "Reference Frame",
                 cv::Point(75, 500),
                 cv::FONT_HERSHEY_DUPLEX,
                 3, CV_RGB(0, 0, 255), 4);
