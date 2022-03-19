@@ -11,7 +11,7 @@ MonocularVONode::MonocularVONode(
    "BruteForce-Hamming","SEL_KNN",
    999999,999999,99999999,140,
    // The most important parameters:
-   50, 50,
+   50, 30,
    20, 8,0.5)
 {
   // Local Tracking ::
@@ -30,7 +30,7 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
-  int send_img_hz = 30; // Hz
+  int send_img_hz = 25; // Hz
   m_timer_provide_data_frame = this->create_wall_timer(
       std::chrono::milliseconds(1/send_img_hz),
       std::bind(&MonocularVONode::CallbackImageProvider,
@@ -55,7 +55,7 @@ MonocularVONode::CallbackImageProvider()
     FameSharedPtr view(new Frame);
     view->img_colored = img;
 
-    bool use_undistorted_img = true;
+    bool use_undistorted_img = false;
 
     if (use_undistorted_img)
     {
@@ -89,9 +89,7 @@ MonocularVONode::CallbackImageProvider()
 
   } else
     m_view_id = 0;
-
   m_view_id++;
-
 }
 
 

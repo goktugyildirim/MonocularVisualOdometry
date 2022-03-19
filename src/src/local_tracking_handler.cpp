@@ -44,13 +44,19 @@ LocalTrackingHandler::track_frames(
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
   cv::moveWindow("Local Feature Tracking", 20,20);
 
+
   while (m_keep_tracking)
   {
+    auto start_wait_for_frame = std::chrono::steady_clock::now();
     // Take curr_frame from queue
     FrameSharedPtr curr_frame(new Frame);
     while (!queue_view_to_tracking->try_dequeue(curr_frame)) {}
-
     m_frames.push_frame(curr_frame);
+    auto end_wait_for_frame = std::chrono::steady_clock::now();
+    std::cout << "Waiting for new frame tooks: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(
+                     end_wait_for_frame - start_wait_for_frame).count()
+              << " millisecond." << std::endl;
 
     // Only first iteration:
     if(!m_is_ref_frame_selected)
@@ -60,12 +66,13 @@ LocalTrackingHandler::track_frames(
       m_tracked_p2d_ids.clear();
       Vision::extract_features(curr_frame, m_params);
       m_tracked_p2d_ids.resize(
-        m_frames.get_ref_frame()->ref_frame_initial_observed_points.size());
+        m_frames.get_ref_frame()->ref_frame_initial_observed_points_2d.size());
       std::iota (std::begin(m_tracked_p2d_ids),
             std::end(m_tracked_p2d_ids), 0);
       continue;
     }
     // Tracking spins:
+    auto start_local_tracking_spin = std::chrono::steady_clock::now();
     if (m_is_ref_frame_selected)
     {
       track_observations_optical_flow(50, m_params.ransac_outlier_threshold);
@@ -86,23 +93,28 @@ LocalTrackingHandler::track_frames(
 
       } else if (m_tracked_p2d_ids.size() <=  m_params.count_min_tracked)
       {
+        std::cout << "New local map detected." << std::endl;
         m_frames.set_curr_frame_is_ref_frame();
         m_is_ref_frame_selected = true;
         m_tracked_p2d_ids.clear();
         Vision::extract_features(curr_frame, m_params);
         m_tracked_p2d_ids.resize(
-          m_frames.get_ref_frame()->ref_frame_initial_observed_points.size());
+          m_frames.get_ref_frame()->ref_frame_initial_observed_points_2d.size());
         std::iota (std::begin(m_tracked_p2d_ids),
                   std::end(m_tracked_p2d_ids), 0);
         m_is_init_done = false;
-        std::cout << "New local map detected." << std::endl;
       }
-
+      auto end_local_tracking_spin = std::chrono::steady_clock::now();
+      std::cout << "Tracking spin tooks: "
+                << std::chrono::duration_cast<std::chrono::milliseconds>(
+                       end_local_tracking_spin - start_local_tracking_spin).count()
+                << " millisecond." << std::endl;
     }
+
     // Each new frame comes:
-    //m_frames.print_info();
     std::cout << "Reference frame id: " << m_frames.get_ref_frame()->frame_id << std::endl;
     std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
+    //m_frames.print_info();
     std::cout << "###########################"
                  "##########################" <<
                  "##########################" <<
@@ -128,10 +140,6 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
       cv::TermCriteria::COUNT+cv::TermCriteria::EPS,
       50, 0.01);
 
-  std::cout << "Optical flow processing on frames: " <<
-    prev_frame->frame_id << "-" << curr_frame->frame_id << std::endl;
-
-  auto start = std::chrono::steady_clock::now();
   cv::calcOpticalFlowPyrLK(prev_frame->image_gray,
                            curr_frame->image_gray,
                            prev_frame->keypoints_p2d,
@@ -139,10 +147,6 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
                            status, err, winSize,
                            3, termcrit,
                            0, 0.001);
-  auto end = std::chrono::steady_clock::now();
-  std::cout << "Optical flow tooks: "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-            << " millisecond." << std::endl;
   // Remove lost keypoints:
   int x = prev_frame->width;
   int y = prev_frame->height;
@@ -156,7 +160,7 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
       // Remove lost points in ref frame keypoint ids
       m_tracked_p2d_ids.erase(
           m_tracked_p2d_ids.begin() + i - indexCorrection);
-      // Remove lost points in prev frane
+      // Remove lost points in prev frane in order to use in epipolar tracking refinement:
       prev_frame->keypoints_p2d.erase(
           prev_frame->keypoints_p2d.begin() + i - indexCorrection);
       // Remove lost points in current frame
@@ -211,7 +215,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   std::vector<cv::Point2f> ref_points;
   // Filter reference frame keypoints:
   for (int i=0; i < m_tracked_p2d_ids.size(); i++)
-    ref_points.push_back(ref_frame->ref_frame_initial_observed_points.at(m_tracked_p2d_ids.at(i)));
+    ref_points.push_back(ref_frame->ref_frame_initial_observed_points_2d.at(m_tracked_p2d_ids.at(i)));
   // Current frame keypoints:
   std::vector<cv::Point2f> curr_points = m_frames.get_curr_frame()->keypoints_p2d;
   cv::Mat img_concat;
@@ -226,7 +230,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
     cv::Point2f px_upper = ref_points[i];
     cv::Point2f px_lower = curr_points[i];
     px_lower.y += ref_frame->image_gray.rows;
-    if (false)
+    if (true)
     {
       cv::line(img_concat, px_upper, px_lower,
                cv::Scalar(0, 255, 0),

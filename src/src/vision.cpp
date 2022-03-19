@@ -413,16 +413,19 @@ MonocularVO::Vision::extract_features(
   Vision::detect_keypoints(params, frame->keypoints, frame->image_gray);
   Vision::desc_keypoints(params, frame->keypoints, frame->descriptors,
                          frame->image_gray);
-  Vision::adaptiveNonMaximalSuppresion(frame->keypoints,2000);
+  std::cout << "Detected keypoint count before nonmax sup: " << frame->keypoints.size() << std::endl;
+  // ORB Monocular SLAM keypoint extraction limit: 500
+  Vision::adaptiveNonMaximalSuppresion(frame->keypoints,500);
   for (const auto& keypoint: frame->keypoints)
   {
     frame->keypoints_p2d.push_back(keypoint.pt);
     if (frame->is_ref_frame)
-      frame->ref_frame_initial_observed_points.push_back(keypoint.pt);
+      frame->ref_frame_initial_observed_points_2d.push_back(keypoint.pt);
   }
+  std::cout << "Detected keypoint count after nonmax sup: " << frame->ref_frame_initial_observed_points_2d.size() << std::endl;
   frame->is_feature_extracted = true;
   auto end = std::chrono::steady_clock::now();
-  std::cout << "Feature extraction tooks: "
+  std::cout << "Keypoint extraction tooks: "
        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
        << " millisecond." << std::endl;
 }
