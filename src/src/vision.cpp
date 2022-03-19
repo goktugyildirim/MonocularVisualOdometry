@@ -415,6 +415,7 @@ MonocularVO::Vision::extract_features(
   Vision::detect_keypoints(params, frame->keypoints, frame->image_gray);
   Vision::desc_keypoints(params, frame->keypoints, frame->descriptors,
                          frame->image_gray);
+  Vision::adaptiveNonMaximalSuppresion(frame->keypoints,2000);
   for (const auto& keypoint: frame->keypoints)
   {
     frame->keypoints_p2d.push_back(keypoint.pt);

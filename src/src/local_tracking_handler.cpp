@@ -67,13 +67,21 @@ LocalTrackingHandler::track_frames(
     // Tracking spins:
     if (m_is_ref_frame_selected)
     {
-      track_observations_optical_flow(25, 1);
-      show_tracking(1.25);
+      track_observations_optical_flow(25, 0.5);
+      show_tracking(1.5);
 
       if (m_tracked_p2d_ids.size() > m_params.count_min_tracked)
       {
         // TODO:: if(is_init_done) {} else {}
+        if (!m_is_init_done)
+        {
 
+        }
+
+        if (m_is_init_done)
+        {
+
+        }
 
       } else if (m_tracked_p2d_ids.size() <=  m_params.count_min_tracked)
       {
@@ -87,7 +95,6 @@ LocalTrackingHandler::track_frames(
         m_is_init_done = false;
         std::cout << "New local map detected." << std::endl;
       }
-
 
     }
     // Each new frame comes:
@@ -106,7 +113,7 @@ LocalTrackingHandler::track_frames(
 
 void
 LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
-                                                      const double&repr_threshold)
+                                                      const double& repr_threshold)
 {
   FrameSharedPtr prev_frame = m_frames.get_prev_frame();
   FrameSharedPtr curr_frame = m_frames.get_curr_frame();
@@ -197,8 +204,45 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
 void
 LocalTrackingHandler::show_tracking(const float& downs_ratio)
 {
+  FrameSharedPtr ref_frame = m_frames.get_ref_frame();
+  FrameSharedPtr curr_frame = m_frames.get_curr_frame();
+  std::vector<cv::Point2f> ref_points;
+  // Filter reference frame keypoints:
+  for (int i=0; i < m_tracked_p2d_ids.size(); i++)
+    ref_points.push_back(m_ref_keypoints.at(m_tracked_p2d_ids.at(i)));
+  // Current frame keypoints:
+  std::vector<cv::Point2f> curr_points = m_frames.get_curr_frame()->keypoints_p2d;
+  cv::Mat img_concat;
   cv::Mat img_show;
-  cv::resize(m_frames.get_curr_frame()->image_gray_with_kpts,
+
+  cv::vconcat(ref_frame->image_gray_with_kpts,
+              curr_frame->image_gray_with_kpts,
+              img_concat);
+
+  for (int i=0; i <curr_points.size(); i++)
+  {
+    cv::Point2f px_upper = ref_points[i];
+    cv::Point2f px_lower = curr_points[i];
+    px_lower.y += ref_frame->image_gray.rows;
+    if (true)
+    {
+      cv::line(img_concat, px_upper, px_lower,
+               cv::Scalar(0, 255, 0),
+               1, cv::LINE_8);
+    }
+
+    cv::circle(img_concat, ref_points[i], 3,
+               cv::Scalar(0, 0, 255),
+               2, 4, 0);
+
+    cv::Point2f p = curr_points[i];
+    p.y += ref_frame->image_gray.rows;;
+    cv::circle(img_concat, p, 4,
+               cv::Scalar(0, 0, 255),
+               3, 4, 0);
+  }
+  img_show = img_concat;
+  cv::resize(img_show,
              img_show,
              cv::Size(m_frames.get_curr_frame()->width/downs_ratio,
                       m_frames.get_curr_frame()->height/downs_ratio),
