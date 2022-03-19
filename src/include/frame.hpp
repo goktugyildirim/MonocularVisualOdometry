@@ -19,7 +19,10 @@ class Frame
   int width{};
   std::vector<cv::KeyPoint> keypoints{};
   cv::Mat descriptors;
+
   bool is_ref_frame = false;
+  std::vector<cv::Point2f> ref_frame_initial_observed_points;
+
   bool is_keyframe = false;
   bool is_img_deleted = false;
   bool is_feature_extracted = false;

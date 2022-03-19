@@ -124,7 +124,6 @@ class Vision
 
   static void
   extract_features(FrameSharedPtr& frame,
-                   std::vector<cv::Point2f>& m_ref_keypoints,
                    const MonocularVO::Params& params);
 
 

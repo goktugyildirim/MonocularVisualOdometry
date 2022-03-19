@@ -31,7 +31,7 @@ private:
   MonocularVO::Params m_params;
 
   // Tracking:
-  std::shared_ptr<LockFreeQueue> m_queue_frame_to_initialization;
+  std::shared_ptr<LockFreeQueue> m_queue_frames_to_local_tracking;
   void callback_view_tracked(
       const cv::Mat& img_concat);
   std::shared_ptr<LocalTrackingHandler> m_worker_local_tracker;

@@ -6,16 +6,16 @@ namespace MonocularVO
 MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
   : Node("bundle_adjustment_node", node_options), m_view_id(0),
-      m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
-   "FAST","BRIEF",
+      m_params(false, // The fastest combination : FAST - BRIEF - use modern: true
+   "SHITOMASI","ORB",
    "BruteForce-Hamming","SEL_KNN",
    999999,999999,99999999,140,
    // The most important parameters:
-   50, 30,
-   20, 8,1)
+   50, 50,
+   20, 8,0.5)
 {
   // Local Tracking ::
-  m_queue_frame_to_initialization = std::make_shared<LockFreeQueue>(9999999);
+  m_queue_frames_to_local_tracking = std::make_shared<LockFreeQueue>(9999999);
   MonocularVO::LocalTrackingHandler::TypeCallbackTrack
       callback_view_tracked =
       std::bind(
@@ -24,7 +24,7 @@ MonocularVONode::MonocularVONode(
       );
   m_worker_local_tracker = std::make_shared<LocalTrackingHandler>(m_params,
       callback_view_tracked);
-  m_worker_local_tracker->start(m_queue_frame_to_initialization);
+  m_worker_local_tracker->start(m_queue_frames_to_local_tracking);
   // Publishers:
   m_pub_match_view = this->create_publisher<ImageMsgT>(
       "/image_match", 50);
@@ -83,7 +83,7 @@ MonocularVONode::CallbackImageProvider()
     view->image_gray_with_kpts = img_gray_with_kpts;
 
     //  Enqueues one item, but only if enough memory is already allocated
-    while (!m_queue_frame_to_initialization->try_enqueue(view)) {
+    while (!m_queue_frames_to_local_tracking->try_enqueue(view)) {
       // spin until write a value
     }
 

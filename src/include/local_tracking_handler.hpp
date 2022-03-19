@@ -56,11 +56,8 @@ class LocalTrackingHandler {
   std::atomic_bool m_is_init_done;
   std::atomic_bool m_is_ref_frame_selected;
 
-  std::vector<cv::Point2f> m_ref_keypoints;
   std::vector<int> m_tracked_p2d_ids;
-
   std::vector<int> m_tracked_p3d_ids;
-
   Frames m_frames;
 
 
@@ -72,9 +69,6 @@ class LocalTrackingHandler {
 
 
 */
-
-
-
 
 
 };

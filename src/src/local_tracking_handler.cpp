@@ -58,8 +58,9 @@ LocalTrackingHandler::track_frames(
       m_frames.set_curr_frame_is_ref_frame();
       m_is_ref_frame_selected = true;
       m_tracked_p2d_ids.clear();
-      Vision::extract_features(curr_frame, m_ref_keypoints, m_params);
-      m_tracked_p2d_ids.resize(m_ref_keypoints.size());
+      Vision::extract_features(curr_frame, m_params);
+      m_tracked_p2d_ids.resize(
+        m_frames.get_ref_frame()->ref_frame_initial_observed_points.size());
       std::iota (std::begin(m_tracked_p2d_ids),
             std::end(m_tracked_p2d_ids), 0);
       continue;
@@ -67,7 +68,7 @@ LocalTrackingHandler::track_frames(
     // Tracking spins:
     if (m_is_ref_frame_selected)
     {
-      track_observations_optical_flow(25, 0.5);
+      track_observations_optical_flow(50, m_params.ransac_outlier_threshold);
       show_tracking(1.5);
 
       if (m_tracked_p2d_ids.size() > m_params.count_min_tracked)
@@ -88,8 +89,9 @@ LocalTrackingHandler::track_frames(
         m_frames.set_curr_frame_is_ref_frame();
         m_is_ref_frame_selected = true;
         m_tracked_p2d_ids.clear();
-        Vision::extract_features(curr_frame, m_ref_keypoints, m_params);
-        m_tracked_p2d_ids.resize(m_ref_keypoints.size());
+        Vision::extract_features(curr_frame, m_params);
+        m_tracked_p2d_ids.resize(
+          m_frames.get_ref_frame()->ref_frame_initial_observed_points.size());
         std::iota (std::begin(m_tracked_p2d_ids),
                   std::end(m_tracked_p2d_ids), 0);
         m_is_init_done = false;
@@ -138,9 +140,9 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
                            3, termcrit,
                            0, 0.001);
   auto end = std::chrono::steady_clock::now();
-  /*std::cout << "Optical flow tooks: "
+  std::cout << "Optical flow tooks: "
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-            << " millisecond." << std::endl;*/
+            << " millisecond." << std::endl;
   // Remove lost keypoints:
   int x = prev_frame->width;
   int y = prev_frame->height;
@@ -209,7 +211,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   std::vector<cv::Point2f> ref_points;
   // Filter reference frame keypoints:
   for (int i=0; i < m_tracked_p2d_ids.size(); i++)
-    ref_points.push_back(m_ref_keypoints.at(m_tracked_p2d_ids.at(i)));
+    ref_points.push_back(ref_frame->ref_frame_initial_observed_points.at(m_tracked_p2d_ids.at(i)));
   // Current frame keypoints:
   std::vector<cv::Point2f> curr_points = m_frames.get_curr_frame()->keypoints_p2d;
   cv::Mat img_concat;
@@ -224,7 +226,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
     cv::Point2f px_upper = ref_points[i];
     cv::Point2f px_lower = curr_points[i];
     px_lower.y += ref_frame->image_gray.rows;
-    if (true)
+    if (false)
     {
       cv::line(img_concat, px_upper, px_lower,
                cv::Scalar(0, 255, 0),
