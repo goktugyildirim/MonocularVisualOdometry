@@ -46,7 +46,6 @@ LocalTrackingHandler::track_frames(
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
   cv::moveWindow("Local Feature Tracking", 20,20);
 
-
   while (m_keep_tracking)
   {
     auto start_wait_for_frame = std::chrono::steady_clock::now();
@@ -63,14 +62,7 @@ LocalTrackingHandler::track_frames(
     // Only first iteration:
     if(!m_is_ref_frame_selected)
     {
-      m_frames.set_curr_frame_is_ref_frame();
-      m_is_ref_frame_selected = true;
-      m_tracked_p2d_ids.clear();
-      Vision::extract_features(curr_frame, m_params);
-      m_tracked_p2d_ids.resize(
-        m_frames.get_ref_frame()->ref_frame_initial_observed_points_2d.size());
-      std::iota (std::begin(m_tracked_p2d_ids),
-            std::end(m_tracked_p2d_ids), 0);
+      make_reference_frame(curr_frame);
       continue;
     }
     // Tracking spins:
@@ -98,14 +90,7 @@ LocalTrackingHandler::track_frames(
       if (!m_tracking_evaluation.is_tracking_ok)
       {
         std::cout << "New local map detected." << std::endl;
-        m_frames.set_curr_frame_is_ref_frame();
-        m_is_ref_frame_selected = true;
-        m_tracked_p2d_ids.clear();
-        Vision::extract_features(curr_frame, m_params);
-        m_tracked_p2d_ids.resize(
-          m_frames.get_ref_frame()->ref_frame_initial_observed_points_2d.size());
-        std::iota (std::begin(m_tracked_p2d_ids),
-                  std::end(m_tracked_p2d_ids), 0);
+        make_reference_frame(curr_frame);
         m_is_init_done = false;
         std::cout << "###########################"
                      "##########################" <<
@@ -125,7 +110,6 @@ LocalTrackingHandler::track_frames(
 
     // Each new frame comes:
     std::cout << "Reference frame id: " << m_frames.get_ref_frame()->frame_id << std::endl;
-    std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
     //m_frames.print_info();
     std::cout << "###########################"
                  "##########################" <<
@@ -139,10 +123,32 @@ LocalTrackingHandler::track_frames(
 LocalTrackingHandler::TrackingEvaluation
 LocalTrackingHandler::eval_tracking()
 {
+  std::cout << "\nTracking evaluation report:" << std::endl;
+  std::cout << "***************************************************" << std::endl;
+  std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
+
   TrackingEvaluation tracking_evaluation;
   tracking_evaluation.is_tracking_ok = true;
   if(m_tracked_p2d_ids.size() <= m_params.count_min_tracked)
     tracking_evaluation.is_tracking_ok = false;
+
+  if(tracking_evaluation.is_tracking_ok)
+  {
+    FrameSharedPtr ref_frame = m_frames.get_ref_frame();
+    FrameSharedPtr curr_frame = m_frames.get_curr_frame();
+    std::vector<cv::Point2f> ref_points;
+    // Filter reference frame keypoints:
+    for (int i=0; i < m_tracked_p2d_ids.size(); i++)
+      ref_points.push_back(ref_frame->keypoints.at(m_tracked_p2d_ids.at(i)).pt);
+
+    double average_displacement = Vision::average_ang_px_displacement(
+        ref_points,
+        curr_frame->keypoints_p2d,
+        ref_frame->height,
+        ref_frame->width);
+    std::cout << "Average ang px displacement:" << average_displacement << std::endl;
+  }
+  std::cout << "***************************************************\n" << std::endl;
   return tracking_evaluation;
 }
 
@@ -236,7 +242,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   std::vector<cv::Point2f> ref_points;
   // Filter reference frame keypoints:
   for (int i=0; i < m_tracked_p2d_ids.size(); i++)
-    ref_points.push_back(ref_frame->ref_frame_initial_observed_points_2d.at(m_tracked_p2d_ids.at(i)));
+    ref_points.push_back(ref_frame->keypoints.at(m_tracked_p2d_ids.at(i)).pt);
   // Current frame keypoints:
   std::vector<cv::Point2f> curr_points = m_frames.get_curr_frame()->keypoints_p2d;
   cv::Mat img_concat;
@@ -260,13 +266,13 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
 
     cv::circle(img_concat, ref_points[i], 3,
                cv::Scalar(0, 0, 255),
-               2, 4, 0);
+               1, 4, 0);
 
     cv::Point2f p = curr_points[i];
     p.y += ref_frame->image_gray.rows;;
     cv::circle(img_concat, p, 4,
                cv::Scalar(0, 0, 255),
-               3, 4, 0);
+               1, 4, 0);
   }
   img_show = img_concat;
   cv::resize(img_show,
@@ -279,7 +285,18 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   cv::waitKey(1);
 }
 
-
+void
+LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
+{
+  m_frames.set_curr_frame_is_ref_frame();
+  m_is_ref_frame_selected = true;
+  m_tracked_p2d_ids.clear();
+  Vision::extract_features(curr_frame, m_params);
+  m_tracked_p2d_ids.resize(
+      m_frames.get_ref_frame()->keypoints.size());
+  std::iota (std::begin(m_tracked_p2d_ids),
+            std::end(m_tracked_p2d_ids), 0);
+}
 
 /*
 

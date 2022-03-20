@@ -416,12 +416,10 @@ MonocularVO::Vision::extract_features(
                          frame->image_gray);
   std::cout << "Detected keypoint count: " << frame->keypoints.size() << std::endl;
 
+  // Optical flow tracker takes vector<Point2f> as an input
   for (const auto& keypoint: frame->keypoints)
-  {
     frame->keypoints_p2d.push_back(keypoint.pt);
-    if (frame->is_ref_frame)
-      frame->ref_frame_initial_observed_points_2d.push_back(keypoint.pt);
-  }
+
   frame->is_feature_extracted = true;
   auto end = std::chrono::steady_clock::now();
   std::cout << "Keypoint extraction tooks: "
@@ -503,8 +501,6 @@ MonocularVO::Vision::track_features(
 }
 
 */
-
-
 
 
 

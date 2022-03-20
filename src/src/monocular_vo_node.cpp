@@ -12,7 +12,7 @@ MonocularVONode::MonocularVONode(
    800,999999,99999999,150,
    // The most important parameters:
    50, 30,
-   20, 8,0.2)
+   20, 8,0.3)
 {
   // Local Tracking ::
   m_queue_frames_to_local_tracking = std::make_shared<LockFreeQueue>(9999999);
@@ -30,7 +30,7 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
-  int ms = 33;
+  int ms = 20;
   m_timer_provide_data_frame = this->create_wall_timer(
       std::chrono::milliseconds(ms),
       std::bind(&MonocularVONode::CallbackImageProvider,
@@ -87,8 +87,9 @@ MonocularVONode::CallbackImageProvider()
       // spin until write a value
     }
 
-  } else
-    m_view_id = 0;
+  }
+//  else
+//    m_view_id = 0;
   m_view_id++;
 }
 
