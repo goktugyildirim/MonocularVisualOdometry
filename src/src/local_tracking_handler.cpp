@@ -62,25 +62,30 @@ LocalTrackingHandler::track_frames(
     // Only first iteration:
     if(!m_is_ref_frame_selected)
     {
-      make_reference_frame(curr_frame);
+      LocalTrackingHandler::make_reference_frame(curr_frame);
       continue;
     }
     // Tracking spins:
     auto start_local_tracking_spin = std::chrono::steady_clock::now();
     if (m_is_ref_frame_selected)
     {
-      track_observations_optical_flow(50,
+      LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
-      m_tracking_evaluation = eval_tracking(2, 30);
-      show_tracking(1.6);
+      m_tracking_evaluation = LocalTrackingHandler::eval_tracking(2,
+                                                                  30,
+                                                                  true);
+      LocalTrackingHandler::show_tracking(1.6);
 
       if (m_tracking_evaluation.is_tracking_ok)
       {
+        // Tracking is ok | not initialized | ready try to init
         if (!m_is_init_done and m_tracking_evaluation.ready_for_trying_to_init)
         {
-
+          FrameSharedPtr ref_frame =  m_frames.get_ref_frame();
+          m_is_init_done = m_initializer.try_init(ref_frame, curr_frame, m_tracked_p2d_ids);
         }
 
+        // Tracking is ok | initialized
         if (m_is_init_done)
         {
 
@@ -91,7 +96,7 @@ LocalTrackingHandler::track_frames(
       if (!m_tracking_evaluation.is_tracking_ok)
       {
         std::cout << "New local map detected." << std::endl;
-        make_reference_frame(curr_frame);
+        LocalTrackingHandler::make_reference_frame(curr_frame);
         m_is_init_done = false;
       }
       auto end_local_tracking_spin = std::chrono::steady_clock::now();
@@ -115,15 +120,17 @@ LocalTrackingHandler::track_frames(
 }
 
 LocalTrackingHandler::TrackingEvaluation
-LocalTrackingHandler::eval_tracking(const double&avg_px_dis_threshold,
-                                    const int& count_diff_frame_threshold)
+LocalTrackingHandler::eval_tracking(const double& avg_px_dis_threshold,
+                                    const int& count_diff_frame_threshold,
+                                    const bool& print_info)
 {
-  std::cout << "Tracking evaluation report:" << std::endl;
-  std::cout << "***************************************************" << std::endl;
-  std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
-
+  // Define initial states:
   TrackingEvaluation tracking_evaluation;
   tracking_evaluation.is_tracking_ok = true;
+  tracking_evaluation.ready_for_trying_to_init = false;
+  tracking_evaluation.average_ang_px_displacement = 0;
+
+  // Evaluation of states:
   if(m_tracked_p2d_ids.size() <= m_params.count_min_tracked)
     tracking_evaluation.is_tracking_ok = false;
 
@@ -141,24 +148,31 @@ LocalTrackingHandler::eval_tracking(const double&avg_px_dis_threshold,
         curr_frame->keypoints_p2d,
         ref_frame->height,
         ref_frame->width);
-    std::cout << "Average ang px displacement:" <<
-        tracking_evaluation.average_ang_px_displacement << std::endl;
 
+    // Calculate frame diff:
     int diff_frame_count = curr_frame->frame_id - ref_frame->frame_id;
-    if (tracking_evaluation.average_ang_px_displacement >
-            avg_px_dis_threshold and diff_frame_count > count_diff_frame_threshold)
-    {
+
+    // Calculate average angular px displacement:
+    if (tracking_evaluation.average_ang_px_displacement > avg_px_dis_threshold
+        and diff_frame_count > count_diff_frame_threshold
+        and m_tracked_p2d_ids.size() > 50)
       tracking_evaluation.ready_for_trying_to_init = true;
-      std::cout << "Ready for trying initialization." << std::endl;
-
-    } else
-    {
-      std::cout << "Not ready for trying initialization." << std::endl;
+    else
       tracking_evaluation.ready_for_trying_to_init = false;
-    }
-
   }
-  std::cout << "***************************************************" << std::endl;
+
+  if (print_info)
+  {
+    std::cout << "Tracking evaluation report:" << std::endl;
+    std::cout << "***************************************************" << std::endl;
+    std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
+    std::cout << "Ready for trying initialization: " <<
+        tracking_evaluation.ready_for_trying_to_init << std::endl;
+    std::cout << "Average ang px displacement: " <<
+        tracking_evaluation.average_ang_px_displacement << std::endl;
+    std::cout << "***************************************************" << std::endl;
+  }
+
   return tracking_evaluation;
 }
 

@@ -9,7 +9,7 @@ MonocularVONode::MonocularVONode(
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
    "FAST","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
-   800,999999,99999999,150,
+   800,999999,99999999,160,
    // The most important parameters:
    50, 30,
    20, 8,0.3)
@@ -30,7 +30,7 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
-  int ms = 20;
+  int ms = 10;
   m_timer_provide_data_frame = this->create_wall_timer(
       std::chrono::milliseconds(ms),
       std::bind(&MonocularVONode::CallbackImageProvider,

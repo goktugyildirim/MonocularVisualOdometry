@@ -63,7 +63,8 @@ private:
   void track_observations_optical_flow(const int& window_size, const double&repr_threshold);
   void show_tracking(const float& downs_ratio);
   TrackingEvaluation eval_tracking(const double& avg_px_dis_threshold,
-                                   const int& count_diff_frame_threshold);
+                                   const int& count_diff_frame_threshold,
+                                   const bool& print_info);
 
   std::atomic_bool m_is_init_done;
   std::atomic_bool m_is_ref_frame_selected;

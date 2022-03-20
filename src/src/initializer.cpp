@@ -9,13 +9,23 @@ namespace MonocularVO
 Initializer::Initializer(const MonocularVO::Params& params)
 : m_params(params)
 {}
-void Initializer::try_init(const FrameSharedPtr &ref_frame,
-                           const FrameSharedPtr &curr_frame,
-                           std::vector<int> &tracked_p2d_ids)
+
+bool
+Initializer::try_init(FrameSharedPtr &ref_frame,
+                      FrameSharedPtr &curr_frame,
+                      std::vector<int> &tracked_p2d_ids)
 {
   std::cout << "Trying to init..." << std::endl;
   std::cout << "Count ref frame tracked point count before initialization:" <<
     tracked_p2d_ids.size() << std::endl;
+
+  std::cout << "Count ref frame tracked point count before initialization:" <<
+      curr_frame->keypoints_p2d.size() << std::endl;
+
+  if (tracked_p2d_ids.size() != curr_frame->keypoints_p2d.size())
+    std::cout << "Error." << std::endl;
+
+  return false;
 }
 
 }

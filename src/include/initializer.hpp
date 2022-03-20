@@ -6,6 +6,7 @@
 
 #include "vision.hpp"
 #include "params.hpp"
+#include "frames.hpp"
 
 
 namespace MonocularVO
@@ -16,8 +17,8 @@ public:
   using FrameSharedPtr = std::shared_ptr<Frame>;
   explicit Initializer(const MonocularVO::Params& params);
 
-  void try_init(const FrameSharedPtr& ref_frame,
-                const FrameSharedPtr& curr_frame,
+  bool try_init(FrameSharedPtr& ref_frame,
+                FrameSharedPtr& curr_frame,
                 std::vector<int>& tracked_p2d_ids);
 
 private:
