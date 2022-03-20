@@ -16,10 +16,10 @@ MonocularVO::Vision::adaptiveNonMaximalSuppresion(
   // Sort by response
   //
   std::sort( keypoints.begin(), keypoints.end(),
-             [&]( const cv::KeyPoint& lhs, const cv::KeyPoint& rhs )
-             {
-               return lhs.response > rhs.response;
-             } );
+            [&]( const cv::KeyPoint& lhs, const cv::KeyPoint& rhs )
+            {
+              return lhs.response > rhs.response;
+            } );
 
   std::vector<cv::KeyPoint> anmsPts;
 
@@ -43,10 +43,10 @@ MonocularVO::Vision::adaptiveNonMaximalSuppresion(
   }
 
   std::sort(radiiSorted.begin(), radiiSorted.end(),
-             [&]( const double& lhs, const double& rhs )
-             {
-               return lhs > rhs;
-             } );
+            [&]( const double& lhs, const double& rhs )
+            {
+              return lhs > rhs;
+            } );
 
   const double decisionRadius = radiiSorted[numToKeep];
   for( int i = 0; i < radii.size(); ++i )
@@ -58,6 +58,7 @@ MonocularVO::Vision::adaptiveNonMaximalSuppresion(
   }
   anmsPts.swap( keypoints );
 }
+
 
 
 void
@@ -147,7 +148,7 @@ void MonocularVO::Vision::keypoints_shitomasi(
 // compute detector parameters based on image size
   int blockSize =
      params.shitomasi_block_size;       //  size of an average block for computing a derivative covariation matrix over each pixel neighborhood
-  double maxOverlap = 0.0; // max. permissible overlap between two features in %
+  double maxOverlap = 0.1; // max. permissible overlap between two features in %
   double minDistance = (1.0 - maxOverlap) * blockSize;
   int maxCorners = img.rows * img.cols / std::max(1.0, minDistance); // max. num. of keypoints
 
@@ -413,16 +414,14 @@ MonocularVO::Vision::extract_features(
   Vision::detect_keypoints(params, frame->keypoints, frame->image_gray);
   Vision::desc_keypoints(params, frame->keypoints, frame->descriptors,
                          frame->image_gray);
-  std::cout << "Detected keypoint count before nonmax sup: " << frame->keypoints.size() << std::endl;
-  // ORB Monocular SLAM keypoint extraction limit: 500
-  Vision::adaptiveNonMaximalSuppresion(frame->keypoints,500);
+  std::cout << "Detected keypoint count: " << frame->keypoints.size() << std::endl;
+
   for (const auto& keypoint: frame->keypoints)
   {
     frame->keypoints_p2d.push_back(keypoint.pt);
     if (frame->is_ref_frame)
       frame->ref_frame_initial_observed_points_2d.push_back(keypoint.pt);
   }
-  std::cout << "Detected keypoint count after nonmax sup: " << frame->ref_frame_initial_observed_points_2d.size() << std::endl;
   frame->is_feature_extracted = true;
   auto end = std::chrono::steady_clock::now();
   std::cout << "Keypoint extraction tooks: "
@@ -507,222 +506,6 @@ MonocularVO::Vision::track_features(
 
 
 
-MonocularVO::Vision::MatchKeyFrameSharedPtr
-MonocularVO::Vision::match_key_frames(
-  const MonocularVO::Params& params,
-  FrameSharedPtr& keyframe_old,
-  FrameSharedPtr& keyframe_new)
-{
-  std::cout << "Before matching keyframe worked | prev key-frame kpt count: "
-  << keyframe_old->keypoints.size() << "| curr key-frame kpt count: " <<
-  keyframe_new->keypoints.size() <<  std::endl;
-
-  std::vector<cv::DMatch> matches;
-  Vision::match_descriptors(keyframe_old->keypoints,
-                            keyframe_new->keypoints,
-                            keyframe_old->descriptors,
-                            keyframe_new->descriptors,matches,params);
-
-  keyframe_old->keypoints_p2d.clear();
-  keyframe_new->keypoints_p2d.clear();
-
-  // Left view Image(t-1) reference frame - match queryIdx
-  // Right view Image(t) source frame - match trainIdx
-  std::vector<int> old_kpt_ids;
-  std::vector<int> new_kpt_ids;
-  for (const auto &match_kpt:matches)
-  {
-    old_kpt_ids.push_back(match_kpt.queryIdx);
-    new_kpt_ids.push_back(match_kpt.trainIdx);
-    cv::Point2f kpt_left = keyframe_old->keypoints[match_kpt.queryIdx].pt;
-    cv::Point2f kpt_right = keyframe_new->keypoints[match_kpt.trainIdx].pt;
-    keyframe_old->keypoints_p2d.push_back(kpt_left);
-    keyframe_new->keypoints_p2d.push_back(kpt_right);
-  }
-
-  std::cout << "After keypoint descriptor matching, match count: " <<
-  keyframe_new->keypoints_p2d.size() << std::endl;
-
-  // Calculate fundamental matrix
-  cv::Mat inliers_F;
-  cv::Mat F = Vision::get_F(keyframe_old, keyframe_new, 1.5, inliers_F);
-  // Calculate essential matrix
-  cv::Mat inliers_E;
-  cv::Mat E = Vision::get_E(keyframe_old, keyframe_new, 1.5, inliers_E,
-                             params.K);
-
-  // Refine matches
-  Vision::refine_matches(keyframe_new, keyframe_old, inliers_F, inliers_E,
-                         old_kpt_ids, new_kpt_ids);
-
-  std::cout << "After refinement match count: " << keyframe_new->keypoints_p2d.size() << std::endl;
-
-  assert(keyframe_old->keypoints_p2d.size() == keyframe_new->keypoints_p2d.size()
-             == old_kpt_ids.size() == new_kpt_ids.size());
-
-
-  MatchKeyFrameSharedPtr match_key_frame = std::make_shared<MatchKeyFrame>(keyframe_old->frame_id,
-                                                                           keyframe_old->keypoints,
-                                                                           old_kpt_ids,
-                                                                           keyframe_new->frame_id,
-                                                                           keyframe_new->keypoints,
-                                                                           new_kpt_ids);
-  return match_key_frame;
-
-
-
-
-
-  /*std::cout << "Old frame kpt count: " << keyframe_old->keypoints.size() << std::endl;
-
-  Vision::extract_keyframe_features(keyframe_new, params);
-
-  // End of matching assign again for optical flow
-  std::vector<cv::Point2f> new_kpts_tmp;
-  std::vector<cv::Point2f> new_kpts_tmp;
-  for (const auto& p: keyframe_new->keypoints)
-    new_kpts_tmp.push_back(p.pt);
-
-  std::cout << "New frame kpt count: " << keyframe_new->keypoints.size() << std::endl;
-
-  std::vector<cv::DMatch> matches;
-  Vision::match_descriptors(keyframe_old->keypoints,
-                            keyframe_new->keypoints,
-                            keyframe_old->descriptors,
-                            keyframe_new->descriptors,
-                            matches,
-                            params);
-
-  // Clear old keyframe kpts:
-  keyframe_old->keypoints_p2d.clear();
-  keyframe_new->keypoints_p2d.clear();
-
-  // Left view Image(t-1) reference frame - match queryIdx
-  // Right view Image(t) source frame - match trainIdx
-  std::vector<int> old_kpt_ids;
-  std::vector<int> new_kpt_ids;
-  for (const auto &match_kpt:matches)
-  {
-    old_kpt_ids.push_back(match_kpt.queryIdx);
-    new_kpt_ids.push_back(match_kpt.trainIdx);
-    cv::Point2f kpt_left = keyframe_old->keypoints[match_kpt.queryIdx].pt;
-    cv::Point2f kpt_right = keyframe_new->keypoints[match_kpt.trainIdx].pt;
-    keyframe_old->keypoints_p2d.push_back(kpt_left);
-    keyframe_new->keypoints_p2d.push_back(kpt_right);
-  }
-
-  std::cout << "After keypoint descriptor matching, match count: " << keyframe_new->keypoints_p2d.size() << std::endl;
-
-  // Calculate fundamental matrix
-  cv::Mat inliers_F;
-  cv::Mat F = Vision::get_F(keyframe_old, keyframe_new, 1, inliers_F);
-  // Calculate essential matrix
-  cv::Mat inliers_E;
-  cv::Mat E = Vision::get_E(keyframe_old, keyframe_new, 1, inliers_E);
-
-  // Refine matches
-  Vision::refine_matches(keyframe_new, keyframe_old, inliers_F, inliers_E,
-                         old_kpt_ids, new_kpt_ids);
-
-  assert(keyframe_old->keypoints_p2d.size() == keyframe_new->keypoints_p2d.size()
-  == old_kpt_ids.size() == new_kpt_ids.size());
-
-  std::cout << "After refinement match count: " << keyframe_new->keypoints_p2d.size() << std::endl;
-
-  cv::Mat img_concat = Vision::draw_matches(keyframe_old, keyframe_new);
-
-  // Due to optical flow
-  keyframe_new->keypoints_p2d = new_kpts_tmp;
-
-  MatchKeyFrameSharedPtr match_key_frame = std::make_shared<MatchKeyFrame>(keyframe_old->frame_id,
-                                                                           keyframe_old->keypoints,
-                                                                           old_kpt_ids,
-                                                                           keyframe_new->frame_id,
-                                                                           keyframe_new->keypoints,
-                                                                           new_kpt_ids,
-                                                                           img_concat);
-  return match_key_frame;*/
-}
-
-
-
-/*cv::Mat
-Vision::visualize_feature_tracking(
-    const MapInitialSharedPtr& map,
-    const bool& save_images,
-    const bool& draw_line)
-{
-  cv::Mat concat_img;
-
-  FrameSharedPtr last_key_frame = *(map->frames_.begin()+map->get_last_key_frame_id_in_frames());
-  cv::Mat img_last_key_frame = last_key_frame->image_gray_with_kpts;
-
-  FrameSharedPtr last_frame = *(map->frames_.end()-1);
-  cv::Mat img_last_frame = last_frame->image_gray_with_kpts;
-
-*//*  std::cout << "Matches between frame ids are visualized: " << last_key_frame->frame_id << " " <<
-  last_frame->frame_id << std::endl;*//*
-  cv::Mat img_concat;
-  cv::vconcat(img_last_key_frame,
-              img_last_frame,
-              concat_img);
-
-  for (int i=0; i<last_frame->keypoints_p2d.size(); i++)
-  {
-    cv::Point2f px_upper = last_key_frame->keypoints_p2d[i];
-    cv::Point2f px_lower = last_frame->keypoints_p2d[i];
-    px_lower.y += last_key_frame->image_gray.rows;
-    if (draw_line)
-    {
-      cv::line(concat_img, px_upper, px_lower,
-         cv::Scalar(0, 255, 0),
-         2, cv::LINE_8);
-    }
-
-    cv::circle(concat_img, last_key_frame->keypoints_p2d[i], 3,
-               cv::Scalar(0, 0, 255),
-               2, 4, 0);
-
-    cv::Point2f p = last_frame->keypoints_p2d[i];
-    p.y += last_key_frame->image_gray.rows;;
-    cv::circle(concat_img, p, 4,
-               cv::Scalar(0, 0, 255),
-               3, 4, 0);
-  }
-
-  // Save images:
-  if (save_images)
-  {
-    int counter_img = 0;
-    std::string path = "/home/goktug/Desktop/test_images/";
-    for (auto it=map->frames_.begin()+map->get_last_key_frame_id_in_frames();
-         it!=map->frames_.end(); it++)
-    {
-      cv::Mat img;
-      (*it)->image_gray_with_kpts.copyTo(img);
-      for (int i=0; i<(*it)->keypoints_p2d.size(); i++)
-      {
-        cv::circle(img, (*it)->keypoints_p2d[i], 1,
-                   cv::Scalar(0, 0, 255),
-                   2, 4, 0);
-      }
-      std::string curr_path = path + std::to_string(counter_img) + ".jpg";
-      cv::imwrite(curr_path, img);
-      counter_img++;
-    }
-  }
-
-  if (concat_img.empty())
-   throw std::runtime_error("Concat img is empty!");
-*//*
-
-  last_frame->image_gray.release();
-  last_frame->image_gray_with_kpts.release();
-  last_frame->img_colored.release();
-*//*
-
-  return concat_img;
-}*/
 
 
 double

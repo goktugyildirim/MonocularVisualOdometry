@@ -6,13 +6,13 @@ namespace MonocularVO
 MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
   : Node("bundle_adjustment_node", node_options), m_view_id(0),
-      m_params(false, // The fastest combination : FAST - BRIEF - use modern: true
-   "SHITOMASI","ORB",
+      m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
+   "FAST","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
-   999999,999999,99999999,140,
+   800,999999,99999999,150,
    // The most important parameters:
    50, 30,
-   20, 8,0.5)
+   20, 8,0.2)
 {
   // Local Tracking ::
   m_queue_frames_to_local_tracking = std::make_shared<LockFreeQueue>(9999999);
@@ -30,9 +30,9 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
-  int send_img_hz = 25; // Hz
+  int ms = 33;
   m_timer_provide_data_frame = this->create_wall_timer(
-      std::chrono::milliseconds(1/send_img_hz),
+      std::chrono::milliseconds(ms),
       std::bind(&MonocularVONode::CallbackImageProvider,
                 this));
 }

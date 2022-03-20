@@ -33,13 +33,6 @@ namespace MonocularVO
 class Vision
 {
  public:
-
-  using MapInitialSharedPtr = std::shared_ptr<Frames>;
-  using MatchKeyFrameSharedPtr = std::shared_ptr<MatchKeyFrame>;
-
-
-
-
   static void
   adaptiveNonMaximalSuppresion(std::vector<cv::KeyPoint>& keypoints,
                                const int& numToKeep);
@@ -128,15 +121,7 @@ class Vision
 
 
 
-  static int
-  track_features(
-      const MonocularVO::Params& params,
-      MapInitialSharedPtr & map,
-      cv::Mat& R,
-      cv::Mat& t);
-
-
-
+/*
   static MatchKeyFrameSharedPtr
   match_key_frames(
       const MonocularVO::Params& params,
@@ -147,7 +132,7 @@ class Vision
   static cv::Mat
   visualize_feature_tracking(const MapInitialSharedPtr & map,
                              const bool& save_images,
-                             const bool& draw_line);
+                             const bool& draw_line);*/
 
   static double
   average_ang_px_displacement(const std::vector<cv::Point2f> &prev_frame,

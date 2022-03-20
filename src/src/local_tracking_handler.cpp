@@ -10,8 +10,10 @@ const MonocularVO::Params& params,
 TypeCallbackTrack &callback_view_tracked)
 : send_to_ros_interface{std::move(callback_view_tracked)},
   m_keep_tracking(true), m_params(params), m_frames(params),
-  m_is_ref_frame_selected(false), m_is_init_done(false)
+  m_is_ref_frame_selected(false), m_is_init_done(false),
+  m_initializer(params)
 {
+
   // Local Handler Stuff:
   // * Local handler solves local BA problem
   // Batch :: [last_KF, N x KF,  curr_KF] --> Local Bundle Adjustment design
@@ -76,12 +78,12 @@ LocalTrackingHandler::track_frames(
     if (m_is_ref_frame_selected)
     {
       track_observations_optical_flow(50, m_params.ransac_outlier_threshold);
-      show_tracking(1.5);
+      m_tracking_evaluation = eval_tracking();
+      show_tracking(1.2);
 
-      if (m_tracked_p2d_ids.size() > m_params.count_min_tracked)
+      if (m_tracking_evaluation.is_tracking_ok)
       {
-        // TODO:: if(is_init_done) {} else  {}
-        if (!m_is_init_done)
+        if (!m_is_init_done and m_tracking_evaluation.ready_for_trying_to_init)
         {
 
         }
@@ -91,7 +93,9 @@ LocalTrackingHandler::track_frames(
 
         }
 
-      } else if (m_tracked_p2d_ids.size() <=  m_params.count_min_tracked)
+      } // eof is_is_tracking_ok
+
+      if (!m_tracking_evaluation.is_tracking_ok)
       {
         std::cout << "New local map detected." << std::endl;
         m_frames.set_curr_frame_is_ref_frame();
@@ -103,12 +107,20 @@ LocalTrackingHandler::track_frames(
         std::iota (std::begin(m_tracked_p2d_ids),
                   std::end(m_tracked_p2d_ids), 0);
         m_is_init_done = false;
+        std::cout << "###########################"
+                     "##########################" <<
+            "##########################" <<
+            "##########################" << std::endl;
       }
       auto end_local_tracking_spin = std::chrono::steady_clock::now();
       std::cout << "Tracking spin tooks: "
                 << std::chrono::duration_cast<std::chrono::milliseconds>(
                        end_local_tracking_spin - start_local_tracking_spin).count()
                 << " millisecond." << std::endl;
+      std::cout << "###########################"
+                   "##########################" <<
+          "##########################" <<
+          "##########################" << std::endl;
     }
 
     // Each new frame comes:
@@ -124,6 +136,15 @@ LocalTrackingHandler::track_frames(
   cv::destroyAllWindows();
 }
 
+LocalTrackingHandler::TrackingEvaluation
+LocalTrackingHandler::eval_tracking()
+{
+  TrackingEvaluation tracking_evaluation;
+  tracking_evaluation.is_tracking_ok = true;
+  if(m_tracked_p2d_ids.size() <= m_params.count_min_tracked)
+    tracking_evaluation.is_tracking_ok = false;
+  return tracking_evaluation;
+}
 
 void
 LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
@@ -258,12 +279,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   cv::waitKey(1);
 }
 
-bool
-LocalTrackingHandler::is_tracking_ok()
-{
 
-  return false;
-}
 
 /*
 
