@@ -15,16 +15,21 @@ Initializer::try_init(FrameSharedPtr &ref_frame,
                       FrameSharedPtr &curr_frame,
                       std::vector<int> &tracked_p2d_ids)
 {
-  std::cout << "Trying to init..." << std::endl;
-  std::cout << "Count ref frame tracked point count before initialization:" <<
-    tracked_p2d_ids.size() << std::endl;
-
-  std::cout << "Count ref frame tracked point count before initialization:" <<
-      curr_frame->keypoints_p2d.size() << std::endl;
-
   if (tracked_p2d_ids.size() != curr_frame->keypoints_p2d.size())
     std::cout << "Error." << std::endl;
 
+  if (curr_frame->is_ref_frame)
+    return false;
+
+  std::cout << "Doing initialization." << std::endl;
+  Vision::detect_keypoints(m_params,
+                           curr_frame->keypoints,
+                           curr_frame->image_gray);
+  Vision::desc_keypoints(m_params,
+                         curr_frame->keypoints,
+                         curr_frame->descriptors,
+                         curr_frame->image_gray);
+  std::cout << "Detected keypoint count: " << curr_frame->keypoints.size() << std::endl;
   return false;
 }
 
