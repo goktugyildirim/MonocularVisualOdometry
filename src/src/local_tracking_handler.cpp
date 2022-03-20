@@ -69,9 +69,10 @@ LocalTrackingHandler::track_frames(
     auto start_local_tracking_spin = std::chrono::steady_clock::now();
     if (m_is_ref_frame_selected)
     {
-      track_observations_optical_flow(50, m_params.ransac_outlier_threshold);
-      m_tracking_evaluation = eval_tracking();
-      show_tracking(1.2);
+      track_observations_optical_flow(50,
+      m_params.ransac_outlier_threshold);
+      m_tracking_evaluation = eval_tracking(2, 30);
+      show_tracking(1.6);
 
       if (m_tracking_evaluation.is_tracking_ok)
       {
@@ -92,26 +93,19 @@ LocalTrackingHandler::track_frames(
         std::cout << "New local map detected." << std::endl;
         make_reference_frame(curr_frame);
         m_is_init_done = false;
-        std::cout << "###########################"
-                     "##########################" <<
-            "##########################" <<
-            "##########################" << std::endl;
       }
       auto end_local_tracking_spin = std::chrono::steady_clock::now();
       std::cout << "Tracking spin tooks: "
                 << std::chrono::duration_cast<std::chrono::milliseconds>(
                        end_local_tracking_spin - start_local_tracking_spin).count()
                 << " millisecond." << std::endl;
-      std::cout << "###########################"
-                   "##########################" <<
-          "##########################" <<
-          "##########################" << std::endl;
+
     }
 
     // Each new frame comes:
     std::cout << "Reference frame id: " << m_frames.get_ref_frame()->frame_id << std::endl;
     //m_frames.print_info();
-    std::cout << "###########################"
+    std::cout << "\n###########################"
                  "##########################" <<
                  "##########################" <<
                  "##########################" << std::endl;
@@ -121,9 +115,10 @@ LocalTrackingHandler::track_frames(
 }
 
 LocalTrackingHandler::TrackingEvaluation
-LocalTrackingHandler::eval_tracking()
+LocalTrackingHandler::eval_tracking(const double&avg_px_dis_threshold,
+                                    const int& count_diff_frame_threshold)
 {
-  std::cout << "\nTracking evaluation report:" << std::endl;
+  std::cout << "Tracking evaluation report:" << std::endl;
   std::cout << "***************************************************" << std::endl;
   std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
 
@@ -141,16 +136,33 @@ LocalTrackingHandler::eval_tracking()
     for (int i=0; i < m_tracked_p2d_ids.size(); i++)
       ref_points.push_back(ref_frame->keypoints.at(m_tracked_p2d_ids.at(i)).pt);
 
-    double average_displacement = Vision::average_ang_px_displacement(
+    tracking_evaluation.average_ang_px_displacement = Vision::average_ang_px_displacement(
         ref_points,
         curr_frame->keypoints_p2d,
         ref_frame->height,
         ref_frame->width);
-    std::cout << "Average ang px displacement:" << average_displacement << std::endl;
+    std::cout << "Average ang px displacement:" <<
+        tracking_evaluation.average_ang_px_displacement << std::endl;
+
+    int diff_frame_count = curr_frame->frame_id - ref_frame->frame_id;
+    if (tracking_evaluation.average_ang_px_displacement >
+            avg_px_dis_threshold and diff_frame_count > count_diff_frame_threshold)
+    {
+      tracking_evaluation.ready_for_trying_to_init = true;
+      std::cout << "Ready for trying initialization." << std::endl;
+
+    } else
+    {
+      std::cout << "Not ready for trying initialization." << std::endl;
+      tracking_evaluation.ready_for_trying_to_init = false;
+    }
+
   }
-  std::cout << "***************************************************\n" << std::endl;
+  std::cout << "***************************************************" << std::endl;
   return tracking_evaluation;
 }
+
+
 
 void
 LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
@@ -239,6 +251,40 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
 {
   FrameSharedPtr ref_frame = m_frames.get_ref_frame();
   FrameSharedPtr curr_frame = m_frames.get_curr_frame();
+  cv::Mat img_show_ref;
+  cv::Mat img_show_curr;
+  ref_frame->image_gray_with_kpts.copyTo(img_show_ref);
+  curr_frame->image_gray_with_kpts.copyTo(img_show_curr);
+
+  if (m_tracking_evaluation.ready_for_trying_to_init)
+  {
+    cv::putText(img_show_ref,
+                "Ready to try init: True",
+                cv::Point(curr_frame->width/1.5, curr_frame->height/1.1),
+                cv::FONT_HERSHEY_DUPLEX,
+                1.5, CV_RGB(255, 0, 0), 2);
+
+    cv::putText(img_show_curr,
+                "Ready to try init: True",
+                cv::Point(curr_frame->width/1.5, curr_frame->height/1.1),
+                cv::FONT_HERSHEY_DUPLEX,
+                1.5, CV_RGB(255, 0, 0), 2);
+  }
+  if (!m_tracking_evaluation.ready_for_trying_to_init)
+  {
+    cv::putText(img_show_ref,
+                "Ready to try init: False",
+                cv::Point(curr_frame->width/1.5, curr_frame->height/1.1),
+                cv::FONT_HERSHEY_DUPLEX,
+                1.5, CV_RGB(255, 0, 0), 2);
+
+    cv::putText(img_show_curr,
+                "Ready to try init: False",
+                cv::Point(curr_frame->width/1.5, curr_frame->height/1.1),
+                cv::FONT_HERSHEY_DUPLEX,
+                1.5, CV_RGB(255, 0, 0), 2);
+  }
+
   std::vector<cv::Point2f> ref_points;
   // Filter reference frame keypoints:
   for (int i=0; i < m_tracked_p2d_ids.size(); i++)
@@ -248,8 +294,8 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   cv::Mat img_concat;
   cv::Mat img_show;
 
-  cv::vconcat(ref_frame->image_gray_with_kpts,
-              curr_frame->image_gray_with_kpts,
+  cv::vconcat(img_show_ref,
+              img_show_curr,
               img_concat);
 
   for (int i=0; i <curr_points.size(); i++)
