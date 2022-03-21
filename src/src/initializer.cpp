@@ -13,7 +13,8 @@ Initializer::Initializer(const MonocularVO::Params& params)
 bool
 Initializer::try_init(FrameSharedPtr &ref_frame,
                       FrameSharedPtr &curr_frame,
-                      std::vector<int> &tracked_p2d_ids)
+                      std::vector<int> &tracked_p2d_ids,
+                      const double& scale)
 {
   if (tracked_p2d_ids.size() != curr_frame->keypoints_p2d.size())
     std::cout << "Error." << std::endl;
@@ -22,14 +23,12 @@ Initializer::try_init(FrameSharedPtr &ref_frame,
     return false;
 
   std::cout << "Doing initialization." << std::endl;
-  Vision::detect_keypoints(m_params,
-                           curr_frame->keypoints,
-                           curr_frame->image_gray);
-  Vision::desc_keypoints(m_params,
-                         curr_frame->keypoints,
-                         curr_frame->descriptors,
-                         curr_frame->image_gray);
-  std::cout << "Detected keypoint count: " << curr_frame->keypoints.size() << std::endl;
+
+  std::vector<cv::Point2f> tracked_ref_keypoints;
+  for (const int& tracked_id : tracked_p2d_ids)
+    tracked_ref_keypoints.push_back(ref_frame->keypoints[tracked_id].pt);
+  std::vector<cv::Point2f> tracked_curr_keypoints = curr_frame->keypoints_p2d;
+
   return false;
 }
 

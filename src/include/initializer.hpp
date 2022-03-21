@@ -19,7 +19,8 @@ public:
 
   bool try_init(FrameSharedPtr& ref_frame,
                 FrameSharedPtr& curr_frame,
-                std::vector<int>& tracked_p2d_ids);
+                std::vector<int>& tracked_p2d_ids,
+                const double& scale);
 
 private:
   MonocularVO::Params m_params;

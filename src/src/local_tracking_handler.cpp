@@ -82,7 +82,8 @@ LocalTrackingHandler::track_frames(
         if (!m_is_init_done and m_tracking_evaluation.ready_for_trying_to_init)
         {
           FrameSharedPtr ref_frame =  m_frames.get_ref_frame();
-          m_is_init_done = m_initializer.try_init(ref_frame, curr_frame, m_tracked_p2d_ids);
+          m_is_init_done = m_initializer.try_init(ref_frame, curr_frame,
+                                                  m_tracked_p2d_ids, 1);
         }
 
         // Tracking is ok | initialized
