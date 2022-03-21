@@ -72,7 +72,7 @@ LocalTrackingHandler::track_frames(
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(8,
-                                                                  70,
+                                                                  30,
                                                                   false);
       LocalTrackingHandler::show_tracking(1.2);
 

@@ -5,7 +5,7 @@ namespace MonocularVO
 
 MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
-  : Node("bundle_adjustment_node", node_options), m_view_id(400),
+  : Node("bundle_adjustment_node", node_options), m_view_id(400), // 400
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
    "FAST","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
@@ -30,7 +30,7 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
-  int ms = 10;
+  int ms = 5;
   m_timer_provide_data_frame = this->create_wall_timer(
       std::chrono::milliseconds(ms),
       std::bind(&MonocularVONode::CallbackImageProvider,
