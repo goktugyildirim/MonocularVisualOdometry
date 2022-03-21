@@ -44,7 +44,7 @@ class Frame
                 "Reference Frame",
                 cv::Point(75, 500),
                 cv::FONT_HERSHEY_DUPLEX,
-                3, CV_RGB(0, 0, 255), 4);
+                2, CV_RGB(0, 0, 255), 3);
   }
 
   void

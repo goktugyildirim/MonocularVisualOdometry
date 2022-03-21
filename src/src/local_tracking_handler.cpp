@@ -71,10 +71,10 @@ LocalTrackingHandler::track_frames(
     {
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
-      m_tracking_evaluation = LocalTrackingHandler::eval_tracking(2,
-                                                                  30,
-                                                                  true);
-      LocalTrackingHandler::show_tracking(1.6);
+      m_tracking_evaluation = LocalTrackingHandler::eval_tracking(8,
+                                                                  70,
+                                                                  false);
+      LocalTrackingHandler::show_tracking(1.2);
 
       if (m_tracking_evaluation.is_tracking_ok)
       {
@@ -270,6 +270,14 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   cv::Mat img_show_curr;
   ref_frame->image_gray_with_kpts.copyTo(img_show_ref);
   curr_frame->image_gray_with_kpts.copyTo(img_show_curr);
+
+  std::string count_curr_track = std::to_string(m_tracked_p2d_ids.size());
+
+  cv::putText(img_show_ref,
+              count_curr_track,
+              cv::Point(curr_frame->width/1.5, curr_frame->height/5),
+              cv::FONT_HERSHEY_DUPLEX,
+              4, CV_RGB(255, 0, 0), 3);
 
   if (m_tracking_evaluation.ready_for_trying_to_init)
   {

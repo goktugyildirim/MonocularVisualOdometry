@@ -5,11 +5,11 @@ namespace MonocularVO
 
 MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
-  : Node("bundle_adjustment_node", node_options), m_view_id(0),
+  : Node("bundle_adjustment_node", node_options), m_view_id(400),
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
    "FAST","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
-   800,999999,99999999,160,
+   800,999999,99999999,130,
    // The most important parameters:
    50, 30,
    20, 8,0.3)
