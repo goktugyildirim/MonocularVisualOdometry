@@ -71,15 +71,15 @@ LocalTrackingHandler::track_frames(
     {
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
-      m_tracking_evaluation = LocalTrackingHandler::eval_tracking(9,
+      m_tracking_result = LocalTrackingHandler::eval_tracking(9,
                                                                   30,
                                                                   false);
       LocalTrackingHandler::show_tracking(1.2);
 
-      if (m_tracking_evaluation.is_tracking_ok)
+      if (m_tracking_result.is_tracking_ok)
       {
         // Tracking is ok | not initialized | ready try to init
-        if (!m_is_init_done and m_tracking_evaluation.ready_for_trying_to_init)
+        if (!m_is_init_done and m_tracking_result.ready_for_trying_to_init)
         {
           FrameSharedPtr ref_frame =  m_frames.get_ref_frame();
           m_is_init_done = m_initializer.try_init(ref_frame, curr_frame,
@@ -94,7 +94,7 @@ LocalTrackingHandler::track_frames(
 
       } // eof is_is_tracking_ok
 
-      if (!m_tracking_evaluation.is_tracking_ok)
+      if (!m_tracking_result.is_tracking_ok)
       {
         std::cout << "New local map detected." << std::endl;
         LocalTrackingHandler::make_reference_frame(curr_frame);
@@ -120,13 +120,13 @@ LocalTrackingHandler::track_frames(
   cv::destroyAllWindows();
 }
 
-LocalTrackingHandler::TrackingEvaluation
+LocalTrackingHandler::TrackingResult
 LocalTrackingHandler::eval_tracking(const double& avg_px_dis_threshold,
                                     const int& count_diff_frame_threshold,
                                     const bool& print_info)
 {
   // Define initial states:
-  TrackingEvaluation tracking_evaluation;
+  TrackingResult tracking_evaluation;
   tracking_evaluation.is_tracking_ok = true;
   tracking_evaluation.ready_for_trying_to_init = false;
   tracking_evaluation.average_ang_px_displacement = 0;
@@ -279,7 +279,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
               cv::FONT_HERSHEY_DUPLEX,
               4, CV_RGB(255, 0, 0), 3);
 
-  if (m_tracking_evaluation.ready_for_trying_to_init)
+  if (m_tracking_result.ready_for_trying_to_init)
   {
     cv::putText(img_show_ref,
                 "Ready to try init: True",
@@ -293,7 +293,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
                 cv::FONT_HERSHEY_DUPLEX,
                 1.5, CV_RGB(255, 0, 0), 2);
   }
-  if (!m_tracking_evaluation.ready_for_trying_to_init)
+  if (!m_tracking_result.ready_for_trying_to_init)
   {
     cv::putText(img_show_ref,
                 "Ready to try init: False",

@@ -49,20 +49,19 @@ private:
   std::atomic_bool m_keep_tracking;
   MonocularVO::Initializer m_initializer;
 
-  struct TrackingEvaluation
-  {
+  struct TrackingResult {
     bool is_tracking_ok = false;
     bool ready_for_trying_to_init = false;
     bool is_keyframe = false;
     double average_ang_px_displacement = 0;
   };
-  TrackingEvaluation m_tracking_evaluation;
+  TrackingResult m_tracking_result;
 
   void make_reference_frame(FrameSharedPtr& curr_frame);
   void track_frames(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
   void track_observations_optical_flow(const int& window_size, const double&repr_threshold);
   void show_tracking(const float& downs_ratio);
-  TrackingEvaluation eval_tracking(const double& avg_px_dis_threshold,
+  TrackingResult eval_tracking(const double& avg_px_dis_threshold,
                                    const int& count_diff_frame_threshold,
                                    const bool& print_info);
 
