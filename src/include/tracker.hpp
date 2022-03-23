@@ -7,6 +7,7 @@
 #include "vision.hpp"
 #include "frame.hpp"
 #include "params.hpp"
+#include "types.hpp"
 
 #include <map>
 #include <list>
@@ -23,6 +24,7 @@ public:
   explicit Tracker(const MonocularVO::Params& params);
 
   void track_p2ds(const std::vector<cv::Point2f>& curr_frame_kpts,
+                  const bool& is_ref_frame,
                   const int& frame_id,
                   int& id_p2d);
 
@@ -30,14 +32,21 @@ public:
 
 private:
   Params m_params;
+
   int m_id_p2d;
   int m_id_p3d;
   int m_id_frame;
 
+  std::vector<cv::Point2f> m_points2D;
+  std::vector<cv::Point3d> m_points3D;
+  std::vector<ObservationSharedPtr> m_observations;
 
-  std::map<int, std::vector<cv::Point2f>> map_p2d_to_frames;
-  std::map<int, std::vector<int>> map_frames_to_p2ds;
+  // Mapping between Point3D to Observations:
+  std::map<int, std::vector<int>> map_point3D_to_observation;
 
+  // Mapping between Point2D to Frames
+  std::map<int, std::vector<int>> m_map_p2d_to_frame;
+  std::map<int, std::vector<int>> m_map_frame_to_p2d;
 };
 
 }
