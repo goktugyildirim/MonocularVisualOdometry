@@ -22,15 +22,21 @@ class Tracker
 public:
   explicit Tracker(const MonocularVO::Params& params);
 
-  void track_observations(const std::vector<cv::Point2f>& prev_frame_kpts,
-                          const std::vector<cv::Point2f>& curr_frame_kpts,
-                          const int& frame_id);
+  void track_p2ds(const std::vector<cv::Point2f>& curr_frame_kpts,
+                  const int& frame_id,
+                  int& id_p2d);
+
+  void remove_bad_p2ds(std::vector<cv::Point2f>& curr_frame_kpts);
 
 private:
   Params m_params;
   int m_id_p2d;
   int m_id_p3d;
   int m_id_frame;
+
+
+  std::map<int, std::vector<cv::Point2f>> map_p2d_to_frames;
+  std::map<int, std::vector<int>> map_frames_to_p2ds;
 
 };
 
