@@ -88,7 +88,6 @@ LocalTrackingHandler::track_frames(
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
 
-
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(8,
                                                                   30,
                                                                   false);
@@ -122,7 +121,6 @@ LocalTrackingHandler::track_frames(
                 << std::chrono::duration_cast<std::chrono::milliseconds>(
                        end_local_tracking_spin - start_local_tracking_spin).count()
                 << " millisecond." << std::endl;
-
     }
 
     // Each new frame comes:
@@ -146,7 +144,7 @@ LocalTrackingHandler::track_frames(
     }
     // oef Build observations ######################################################################
 
-    m_frames.print_info();
+    //m_frames.print_info();
     std::cout << "\n###########################"
                  "##########################" <<
                  "##########################" <<
