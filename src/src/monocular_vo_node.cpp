@@ -12,7 +12,7 @@ MonocularVONode::MonocularVONode(
    800,999999,99999999,130,
    // The most important parameters:
    300, 20,
-   20, 180,0.3)
+   20, 8,0.3)
 {
   // Local Tracking ::
   m_queue_frames_to_local_tracking = std::make_shared<LockFreeQueue>(9999999);

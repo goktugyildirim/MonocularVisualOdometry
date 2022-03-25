@@ -68,7 +68,7 @@ Initializer::try_init(FrameSharedPtr &ref_frame,
       R, t,f,c, inlier_mask);
 
   using namespace std::chrono_literals;
-  std::this_thread::sleep_for(100000ms);
+  //std::this_thread::sleep_for(100000ms);
 
   // Scale can ben given from speed odometer or IMU | x = x0 + V*dt
   // R_curr = R*R_curr;  t_curr = t_curr + scale*(R_curr*t);
