@@ -88,15 +88,19 @@ LocalTrackingHandler::track_frames(
     {
       std::cout << "Track observations spin." << std::endl;
 
-/*      auto tracking_result = LocalTrackingHandler::track_observations_optical_flow(
+      auto tracking_result = LocalTrackingHandler::track_observations_optical_flow(
           50,m_params.ransac_outlier_threshold,
             m_frames.get_prev_frame()->image_gray,
             m_frames.get_curr_frame()->image_gray);
 
       m_local_map->build_observations(curr_frame->frame_id,
                                       false,
-                                      tracking_result.first);*/
+                                      tracking_result.first);
 
+      std::cout << "Curr tracked p2d: " << m_local_map->get_p2d_ids_of_frame(curr_frame->frame_id).size() << std::endl;
+      m_local_map->remove_bad_observations(curr_frame->frame_id, tracking_result.second);
+      std::cout << "Curr tracked p2d: " << m_local_map->get_p2d_ids_of_frame(curr_frame->frame_id).size() << std::endl;
+      std::cout << "********************" << std::endl;
 
     }
 

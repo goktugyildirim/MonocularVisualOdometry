@@ -35,6 +35,9 @@ public:
 
   ObservationSharedPtr get_observation(const std::pair<int, int>& pair_id_frame_and_p3d);
 
+  void remove_bad_observations(const int& id_frame,
+                               const std::vector<uchar>& vec_is_ok);
+
 
 
   // Functions for camera pose:
@@ -48,14 +51,14 @@ private:
   int m_id_p3d;
   int m_id_frame;
 
-  std::map<int, ObservationSharedPtr> m_map_observations;
+  std::map<int, ObservationSharedPtr> m_map_observations; // *
 
   // Key: id_frame | Value: Map -> Key: id_p2d Value: p2d
-  std::map<int, std::map<int, cv::Point2f>> m_map_frame_to_p2d;
+  std::map<int, std::map<int, cv::Point2f>> m_map_frame_to_p2d; // *
   // Key: id_frame | Value: Map -> Key: id_p3d Value: p3d
-  std::map<int, std::map<int, cv::Point3d>> m_map_frame_to_p3d;
+  std::map<int, std::map<int, cv::Point3d>> m_map_frame_to_p3d;  // *
   // Key: id_p3d | Value: Map -> Key: id_frame Value: pose
-  std::map<int, std::map<int, cv::Vec6d>> m_map_p3d_to_id_frame;
+  std::map<int, std::map<int, cv::Vec6d>> m_map_p3d_to_id_frame; // *
   // Key: first: id_frame ; second: id_p3d | Value: id_p2d
   std::map<std::pair<int, int>, int> map_cam_pose_p3d_to_observations;
 

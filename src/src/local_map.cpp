@@ -135,4 +135,50 @@ LocalMap::get_observation(
 }
 
 
+void
+LocalMap::remove_bad_observations(
+  const int &id_frame,
+  const std::vector<uchar> &vec_is_ok)
+{
+  std::vector<int> id_p3ds = get_p3d_ids_of_frame(id_frame);
+  std::vector<int> id_p3ds_removed;
+
+  assert(vec_is_ok.size() == id_p2ds.size());
+
+  std::cout << "d1" << std::endl;
+
+  for (int i=0; i<vec_is_ok.size(); i++)
+  {
+    if (!vec_is_ok[i])
+      id_p3ds_removed.push_back(id_p3ds[i]);
+  }
+
+  std::cout << "d2" << std::endl;
+
+  for (const int& id_p3d_remove : id_p3ds_removed)
+  {
+    int id_obs = map_cam_pose_p3d_to_observations[{id_frame, id_p3d_remove}];
+    auto it1 = m_map_observations.find(id_obs);
+    m_map_observations.erase(it1);
+
+    auto it2 = m_map_frame_to_p2d[id_frame].find(id_obs);
+    m_map_frame_to_p2d[id_frame].erase(it2);
+
+    auto it3 = m_map_frame_to_p3d[id_frame].find(id_p3d_remove);
+    m_map_frame_to_p3d[id_frame].erase(it3);
+
+    auto it4 = m_map_p3d_to_id_frame.find(id_p3d_remove);
+  }
+
+  std::cout << "d3" << std::endl;
+  for (const int& id_p3d_remove : id_p3ds_removed)
+  {
+    auto it = map_cam_pose_p3d_to_observations.find({id_frame, id_p3d_remove});
+    map_cam_pose_p3d_to_observations.erase(it);
+  }
+  std::cout << "d4" << std::endl;
+
+
 }
+
+} // eof MonovularVO
