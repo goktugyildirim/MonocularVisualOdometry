@@ -11,7 +11,7 @@ TypeCallbackTrack &callback_view_tracked)
 : send_to_ros_interface{std::move(callback_view_tracked)},
   m_keep_tracking(true), m_params(params), m_frames(params),
   m_is_ref_frame_selected(false), m_is_init_done(false),
-  m_initializer(params)
+  m_initializer(params), m_counter_p3d(0)
 {
 
   // Local Handler Stuff:
@@ -63,6 +63,7 @@ LocalTrackingHandler::track_frames(
     if(!m_is_ref_frame_selected)
     {
       LocalTrackingHandler::make_reference_frame(curr_frame);
+      std::cout << "Observed p3d ids: " << std::endl;
       continue;
     }
     // Tracking spins:
@@ -71,6 +72,8 @@ LocalTrackingHandler::track_frames(
     {
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
+
+
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(8,
                                                                   30,
                                                                   false);
@@ -82,8 +85,7 @@ LocalTrackingHandler::track_frames(
         if (!m_is_init_done and m_tracking_evaluation.ready_for_trying_to_init)
         {
           FrameSharedPtr ref_frame =  m_frames.get_ref_frame();
-          m_is_init_done = m_initializer.try_init(ref_frame, curr_frame,
-                                                  m_tracked_p2d_ids, 1);
+          m_is_init_done = m_initializer.try_init(ref_frame, curr_frame, m_vector_tracked_p3d_ids_corrector, 1);
         }
 
         // Tracking is ok | initialized
@@ -110,6 +112,16 @@ LocalTrackingHandler::track_frames(
 
     // Each new frame comes:
     std::cout << "Reference frame id: " << m_frames.get_ref_frame()->frame_id << std::endl;
+    // Build observations ##########################################################################
+    if (m_vector_tracked_p3d_ids_corrector.size() != m_frames.get_curr_frame()->keypoints_p2d.size()
+        and m_vector_tracked_p3d_ids.size() == m_vector_tracked_p3d_ids_corrector.size())
+      std::cout << "Error." << std::endl;
+
+
+
+
+    // oef Build observations ######################################################################
+
     //m_frames.print_info();
     std::cout << "\n###########################"
                  "##########################" <<
@@ -118,6 +130,29 @@ LocalTrackingHandler::track_frames(
   } // eof m_keep_tracking
 
   cv::destroyAllWindows();
+}
+
+void
+LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
+{
+  m_frames.set_curr_frame_is_ref_frame();
+  m_is_ref_frame_selected = true;
+  m_vector_tracked_p3d_ids_corrector.clear();
+  m_vector_tracked_p3d_ids.clear();
+
+  Vision::extract_features(curr_frame, m_params);
+
+  m_vector_tracked_p3d_ids_corrector.resize(
+      m_frames.get_ref_frame()->keypoints.size());
+  std::iota (std::begin(m_vector_tracked_p3d_ids_corrector),
+            std::end(m_vector_tracked_p3d_ids_corrector), 0);
+
+  m_vector_tracked_p3d_ids.resize(
+      m_frames.get_ref_frame()->keypoints.size());
+  std::iota (std::begin(m_vector_tracked_p3d_ids),
+            std::end(m_vector_tracked_p3d_ids), m_counter_p3d);
+
+  m_counter_p3d += m_frames.get_ref_frame()->keypoints.size();
 }
 
 LocalTrackingHandler::TrackingEvaluation
@@ -132,7 +167,7 @@ LocalTrackingHandler::eval_tracking(const double& avg_px_dis_threshold,
   tracking_evaluation.average_ang_px_displacement = 0;
 
   // Evaluation of states:
-  if(m_tracked_p2d_ids.size() <= m_params.count_min_tracked)
+  if(m_vector_tracked_p3d_ids_corrector.size() <= m_params.count_min_tracked)
     tracking_evaluation.is_tracking_ok = false;
 
   if(tracking_evaluation.is_tracking_ok)
@@ -141,8 +176,8 @@ LocalTrackingHandler::eval_tracking(const double& avg_px_dis_threshold,
     FrameSharedPtr curr_frame = m_frames.get_curr_frame();
     std::vector<cv::Point2f> ref_points;
     // Filter reference frame keypoints:
-    for (int i=0; i < m_tracked_p2d_ids.size(); i++)
-      ref_points.push_back(ref_frame->keypoints.at(m_tracked_p2d_ids.at(i)).pt);
+    for (int i=0; i < m_vector_tracked_p3d_ids_corrector.size(); i++)
+      ref_points.push_back(ref_frame->keypoints.at(m_vector_tracked_p3d_ids_corrector.at(i)).pt);
 
     tracking_evaluation.average_ang_px_displacement = Vision::average_ang_px_displacement(
         ref_points,
@@ -156,7 +191,8 @@ LocalTrackingHandler::eval_tracking(const double& avg_px_dis_threshold,
     // Calculate average angular px displacement:
     if (tracking_evaluation.average_ang_px_displacement > avg_px_dis_threshold
         and diff_frame_count > count_diff_frame_threshold
-        and m_tracked_p2d_ids.size() > 50)
+        and
+        m_vector_tracked_p3d_ids_corrector.size() > 50)
       tracking_evaluation.ready_for_trying_to_init = true;
     else
       tracking_evaluation.ready_for_trying_to_init = false;
@@ -166,7 +202,7 @@ LocalTrackingHandler::eval_tracking(const double& avg_px_dis_threshold,
   {
     std::cout << "Tracking evaluation report:" << std::endl;
     std::cout << "***************************************************" << std::endl;
-    std::cout << "Count curr tracked point count: " << m_tracked_p2d_ids.size() << std::endl;
+    std::cout << "Count curr tracked point count: " << m_vector_tracked_p3d_ids_corrector.size() << std::endl;
     std::cout << "Ready for trying initialization: " <<
         tracking_evaluation.ready_for_trying_to_init << std::endl;
     std::cout << "Average ang px displacement: " <<
@@ -212,8 +248,10 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
     if ((status.at(i) == 0)||(pt.x<0)||(pt.y<0)||pt.x>x||pt.y>y)
     {
       // Remove lost points in ref frame keypoint ids
-      m_tracked_p2d_ids.erase(
-          m_tracked_p2d_ids.begin() + i - indexCorrection);
+      m_vector_tracked_p3d_ids.erase(
+          m_vector_tracked_p3d_ids.begin() + i - indexCorrection);
+      m_vector_tracked_p3d_ids_corrector.erase(
+          m_vector_tracked_p3d_ids_corrector.begin() + i - indexCorrection);
       // Remove lost points in prev frane in order to use in epipolar tracking refinement:
       prev_frame->keypoints_p2d.erase(
           prev_frame->keypoints_p2d.begin() + i - indexCorrection);
@@ -248,8 +286,10 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
         inliers_E.at<bool>(i,0) == false)
     {
       // Remove lost points in ref frame keypoint ids
-      m_tracked_p2d_ids.erase(
-          m_tracked_p2d_ids.begin() + i - indexCorrection);
+      m_vector_tracked_p3d_ids.erase(
+          m_vector_tracked_p3d_ids.begin() + i - indexCorrection);
+      m_vector_tracked_p3d_ids_corrector.erase(
+          m_vector_tracked_p3d_ids_corrector.begin() + i - indexCorrection);
       // Remove lost points in prev frane
       prev_frame->keypoints_p2d.erase(
           prev_frame->keypoints_p2d.begin() + i - indexCorrection);
@@ -271,7 +311,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   ref_frame->image_gray_with_kpts.copyTo(img_show_ref);
   curr_frame->image_gray_with_kpts.copyTo(img_show_curr);
 
-  std::string count_curr_track = std::to_string(m_tracked_p2d_ids.size());
+  std::string count_curr_track = std::to_string(m_vector_tracked_p3d_ids_corrector.size());
 
   cv::putText(img_show_ref,
               count_curr_track,
@@ -310,8 +350,8 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
 
   std::vector<cv::Point2f> ref_points;
   // Filter reference frame keypoints:
-  for (int i=0; i < m_tracked_p2d_ids.size(); i++)
-    ref_points.push_back(ref_frame->keypoints.at(m_tracked_p2d_ids.at(i)).pt);
+  for (int i=0; i < m_vector_tracked_p3d_ids_corrector.size(); i++)
+    ref_points.push_back(ref_frame->keypoints.at(m_vector_tracked_p3d_ids_corrector.at(i)).pt);
   // Current frame keypoints:
   std::vector<cv::Point2f> curr_points = m_frames.get_curr_frame()->keypoints_p2d;
   cv::Mat img_concat;
@@ -354,18 +394,7 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   cv::waitKey(1);
 }
 
-void
-LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
-{
-  m_frames.set_curr_frame_is_ref_frame();
-  m_is_ref_frame_selected = true;
-  m_tracked_p2d_ids.clear();
-  Vision::extract_features(curr_frame, m_params);
-  m_tracked_p2d_ids.resize(
-      m_frames.get_ref_frame()->keypoints.size());
-  std::iota (std::begin(m_tracked_p2d_ids),
-            std::end(m_tracked_p2d_ids), 0);
-}
+
 
 /*
 

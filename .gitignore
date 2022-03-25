@@ -3,5 +3,5 @@ install
 log
 images_test
 images
-
-src/goksu.png
+.idea
+idea

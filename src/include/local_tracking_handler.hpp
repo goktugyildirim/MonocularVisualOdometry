@@ -69,10 +69,12 @@ private:
   std::atomic_bool m_is_init_done;
   std::atomic_bool m_is_ref_frame_selected;
 
-  std::vector<int> m_tracked_p2d_ids;
-  std::vector<int> m_tracked_p3d_ids;
-  Frames m_frames;
+  int m_counter_p3d;
+  std::vector<int> m_vector_tracked_p3d_ids_corrector;
+  std::vector<int> m_vector_tracked_p3d_ids;
+  //std::vector<cv::Point3d> m_vector_tracked_p3d;
 
+  Frames m_frames;
 
 
 /*

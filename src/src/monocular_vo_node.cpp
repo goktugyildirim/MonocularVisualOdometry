@@ -5,14 +5,14 @@ namespace MonocularVO
 
 MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
-  : Node("bundle_adjustment_node", node_options), m_view_id(400), // 400
+  : Node("bundle_adjustment_node", node_options), m_view_id(0), // 400
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
-   "FAST","BRIEF",
+   "ORB","ORB",
    "BruteForce-Hamming","SEL_KNN",
    800,999999,99999999,130,
    // The most important parameters:
-   50, 30,
-   20, 8,0.3)
+   300, 20,
+   20, 180,0.3)
 {
   // Local Tracking ::
   m_queue_frames_to_local_tracking = std::make_shared<LockFreeQueue>(9999999);
