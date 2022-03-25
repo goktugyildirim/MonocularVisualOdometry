@@ -16,7 +16,8 @@
 #include "utils.hpp"
 #include "local_handler.hpp"
 #include "frames.hpp"
-#include <initializer.hpp>
+#include "initializer.hpp"
+#include "local_map.hpp"
 
 #include "concurrency/concurrentqueue.h"
 
@@ -30,7 +31,6 @@ class LocalTrackingHandler {
 
   using FrameSharedPtr = std::shared_ptr<Frame>;
   using LockFreeQueue = moodycamel::ConcurrentQueue<std::shared_ptr<Frame>>;
-  //using LockFreeQueueBatch = moodycamel::ConcurrentQueue<Batch>;
   using TypeCallbackTrack = std::function<void (const cv::Mat& img_concat)>;
 
   TypeCallbackTrack send_to_ros_interface;
@@ -57,20 +57,28 @@ private:
   };
   TrackingResult m_tracking_result;
 
-  void make_reference_frame(FrameSharedPtr& curr_frame);
+  std::vector<cv::Point2f> make_reference_frame(FrameSharedPtr& curr_frame);
   void track_frames(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
-  void track_observations_optical_flow(const int& window_size, const double&repr_threshold);
+  std::pair<std::vector<cv::Point2f>,std::vector<uchar>> track_observations_optical_flow(
+      const int& window_size,
+      const double& repr_threshold,
+      const cv::Mat& img_gray_prev_frame,
+      const cv::Mat& img_gray_curr_frame);
+
   void show_tracking(const float& downs_ratio);
   TrackingResult eval_tracking(const double& avg_px_dis_threshold,
                                    const int& count_diff_frame_threshold,
                                    const bool& print_info);
 
+
   std::atomic_bool m_is_init_done;
   std::atomic_bool m_is_ref_frame_selected;
 
-  std::vector<int> m_tracked_p2d_ids;
-  std::vector<int> m_tracked_p3d_ids;
+  // Frames
   Frames m_frames;
+  LocalMapSharedPtr m_local_map;
+
+
 
 
 

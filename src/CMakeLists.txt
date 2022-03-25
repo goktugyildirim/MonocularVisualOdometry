@@ -28,7 +28,8 @@ ament_auto_add_library(monocular_vo_node SHARED
   include/bundle_adjustment.hpp
   include/optimization.hpp
   include/initializer.hpp
-  include/tracker.hpp
+  include/local_map.hpp
+
 
   include/concurrency/concurrentqueue.h
   include/concurrency/blockingconcurrentqueue.h
@@ -42,7 +43,8 @@ ament_auto_add_library(monocular_vo_node SHARED
   src/local_handler.cpp
   src/optimization.cpp
   src/initializer.cpp
-  src/tracker.cpp
+  src/local_map.cpp
+
   )
   
 include_directories(
