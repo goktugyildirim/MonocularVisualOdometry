@@ -59,11 +59,26 @@ LocalTrackingHandler::track_frames(
                      end_wait_for_frame - start_wait_for_frame).count()
               << " millisecond." << std::endl;
 
+    std::vector<ObservationSharedPtr> new_obs;
+    int id_frame = m_frames.get_curr_frame()->frame_id;
     // Only first iteration:
     if(!m_is_ref_frame_selected)
     {
       LocalTrackingHandler::make_reference_frame(curr_frame);
-      std::cout << "Observed p3d ids: " << std::endl;
+
+      for (int i=0; i<m_vector_tracked_p3d_ids.size(); i++)
+      {
+        int id_p3d = m_vector_tracked_p3d_ids[i];
+        cv::Point2d p2d = m_frames.get_curr_frame()->keypoints_p2d.at(i);
+        ObservationSharedPtr observation = std::make_shared<Observation>(
+            id_frame, id_p3d, cv::Vec6d {0,0,0,0,0,0},
+            cv::Mat(), p2d, cv::Point3d {0,0,0},
+            m_frames.get_curr_frame()->is_keyframe,
+            m_frames.get_curr_frame()->is_ref_frame,
+            false, m_is_init_done);
+        new_obs.push_back(observation);
+      }
+
       continue;
     }
     // Tracking spins:
@@ -117,12 +132,21 @@ LocalTrackingHandler::track_frames(
         and m_vector_tracked_p3d_ids.size() == m_vector_tracked_p3d_ids_corrector.size())
       std::cout << "Error." << std::endl;
 
-
-
-
+    for (int i=0; i<m_vector_tracked_p3d_ids.size(); i++)
+    {
+      int id_p3d = m_vector_tracked_p3d_ids[i];
+      cv::Point2d p2d = m_frames.get_curr_frame()->keypoints_p2d.at(i);
+      ObservationSharedPtr observation = std::make_shared<Observation>(
+        id_frame, id_p3d, cv::Vec6d {0,0,0,0,0,0},
+          cv::Mat(), p2d, cv::Point3d {0,0,0},
+        m_frames.get_curr_frame()->is_keyframe,
+        m_frames.get_curr_frame()->is_ref_frame,
+        false, m_is_init_done);
+      new_obs.push_back(observation);
+    }
     // oef Build observations ######################################################################
 
-    //m_frames.print_info();
+    m_frames.print_info();
     std::cout << "\n###########################"
                  "##########################" <<
                  "##########################" <<

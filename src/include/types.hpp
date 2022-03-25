@@ -31,13 +31,14 @@ struct Observation
   bool is_optimized;
   bool is_initialized;
 
+  int id_obs;
+
   Observation(
-      const int &id_frame, const int& id_point2d, const int &id_point3d,
+      const int &id_frame, const int &id_point3d,
       const cv::Vec6d &pose,  const cv::Mat &mat_pose_4x4, const cv::Point2d &point2d,
       const cv::Point3d &point3d, const bool &is_keyframe, const bool& is_ref_frame,
       const bool& is_optimized, const bool& is_initialized)
   {
-    this->id_point2d = id_point2d;
     this->id_frame = id_frame;
     this->pose = pose;
     this->mat_pose_4x4 = mat_pose_4x4;
