@@ -115,7 +115,7 @@ class Vision
                  std::vector<int>& new_kpt_ids);
 
 
-  static std::vector<cv::Point2f>
+  static void
   extract_features(FrameSharedPtr& frame,
                    const MonocularVO::Params& params);
 

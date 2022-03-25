@@ -16,8 +16,7 @@
 #include "utils.hpp"
 #include "local_handler.hpp"
 #include "frames.hpp"
-#include "initializer.hpp"
-#include "local_map.hpp"
+#include <initializer.hpp>
 
 #include "concurrency/concurrentqueue.h"
 
@@ -31,6 +30,7 @@ class LocalTrackingHandler {
 
   using FrameSharedPtr = std::shared_ptr<Frame>;
   using LockFreeQueue = moodycamel::ConcurrentQueue<std::shared_ptr<Frame>>;
+  //using LockFreeQueueBatch = moodycamel::ConcurrentQueue<Batch>;
   using TypeCallbackTrack = std::function<void (const cv::Mat& img_concat)>;
 
   TypeCallbackTrack send_to_ros_interface;
@@ -49,36 +49,29 @@ private:
   std::atomic_bool m_keep_tracking;
   MonocularVO::Initializer m_initializer;
 
-  struct TrackingResult {
+  struct TrackingEvaluation
+  {
     bool is_tracking_ok = false;
     bool ready_for_trying_to_init = false;
     bool is_keyframe = false;
     double average_ang_px_displacement = 0;
   };
-  TrackingResult m_tracking_result;
+  TrackingEvaluation m_tracking_evaluation;
 
-  std::vector<cv::Point2f> make_reference_frame(FrameSharedPtr& curr_frame);
+  void make_reference_frame(FrameSharedPtr& curr_frame);
   void track_frames(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
-  std::pair<std::vector<cv::Point2f>,std::vector<uchar>> track_observations_optical_flow(
-      const int& window_size,
-      const double& repr_threshold,
-      const cv::Mat& img_gray_prev_frame,
-      const cv::Mat& img_gray_curr_frame);
-
+  void track_observations_optical_flow(const int& window_size, const double&repr_threshold);
   void show_tracking(const float& downs_ratio);
-  TrackingResult eval_tracking(const double& avg_px_dis_threshold,
+  TrackingEvaluation eval_tracking(const double& avg_px_dis_threshold,
                                    const int& count_diff_frame_threshold,
                                    const bool& print_info);
-
 
   std::atomic_bool m_is_init_done;
   std::atomic_bool m_is_ref_frame_selected;
 
-  // Frames
+  std::vector<int> m_tracked_p2d_ids;
+  std::vector<int> m_tracked_p3d_ids;
   Frames m_frames;
-  LocalMapSharedPtr m_local_map;
-
-
 
 
 

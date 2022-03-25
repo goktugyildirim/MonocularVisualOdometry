@@ -404,15 +404,13 @@ MonocularVO::Vision::recover_pose(
 
 
 
-std::vector<cv::Point2f>
+void
 MonocularVO::Vision::extract_features(
    FrameSharedPtr& frame,
    const MonocularVO::Params& params)
 {
   auto start = std::chrono::steady_clock::now();
   frame->keypoints_p2d.clear();
-  frame->descriptors = cv::Mat();
-  
   Vision::detect_keypoints(params, frame->keypoints, frame->image_gray);
   Vision::desc_keypoints(params, frame->keypoints, frame->descriptors,
                          frame->image_gray);
@@ -427,7 +425,6 @@ MonocularVO::Vision::extract_features(
   std::cout << "Keypoint extraction tooks: "
        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
        << " millisecond." << std::endl;
-  return frame->keypoints_p2d;
 }
 
 /*
