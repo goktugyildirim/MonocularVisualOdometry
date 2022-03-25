@@ -13,7 +13,7 @@ Initializer::Initializer(const MonocularVO::Params& params)
 bool
 Initializer::try_init(FrameSharedPtr &ref_frame,
                       FrameSharedPtr &curr_frame,
-                      std::vector<int> &tracked_p2d_ids,
+                      std::vector<int> &vector_tracked_p3d_ids_corrector,
                       const double& scale)
 {
   if (curr_frame->is_ref_frame)
@@ -22,7 +22,7 @@ Initializer::try_init(FrameSharedPtr &ref_frame,
   std::cout << "Doing initialization." << std::endl;
 
   std::vector<cv::Point2f> tracked_ref_keypoints;
-  for (const int& tracked_id : tracked_p2d_ids)
+  for (const int& tracked_id : vector_tracked_p3d_ids_corrector)
     tracked_ref_keypoints.push_back(ref_frame->keypoints[tracked_id].pt);
   std::vector<cv::Point2f> tracked_curr_keypoints = curr_frame->keypoints_p2d;
 

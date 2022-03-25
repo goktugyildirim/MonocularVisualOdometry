@@ -19,7 +19,7 @@ public:
 
   bool try_init(FrameSharedPtr& ref_frame,
                 FrameSharedPtr& curr_frame,
-                std::vector<int>& tracked_p2d_ids,
+                std::vector<int>&vector_tracked_p3d_ids_corrector,
                 const double& scale);
 
 private:
