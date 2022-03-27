@@ -76,6 +76,10 @@ LocalTrackingHandler::track_frames(
     auto start_local_tracking_spin = std::chrono::steady_clock::now();
     if (m_is_ref_frame_selected)
     {
+      // TODO:
+      //  * Add descriptor tracker feature.
+      //  * Try to decrease ORB extraction time consume.
+      //  * Add grid orb extractor feature.
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(4,
@@ -89,7 +93,9 @@ LocalTrackingHandler::track_frames(
         if (!m_is_init_done and m_tracking_evaluation.ready_for_trying_to_init)
         {
           FrameSharedPtr ref_frame =  m_frames.get_ref_frame();
-          m_is_init_done = m_initializer.try_init(ref_frame, curr_frame, m_vector_tracked_p3d_ids_local, 1);
+          m_is_init_done = m_initializer.try_init(ref_frame, curr_frame,
+                                                  m_vector_tracked_p3d_ids_local,
+                                                  1);
         }
 
         // Tracking is ok | initialized
