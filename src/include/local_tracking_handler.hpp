@@ -73,8 +73,8 @@ private:
   std::atomic_bool m_is_ref_frame_selected;
 
   int m_counter_p3d;
-  std::vector<int> m_vector_tracked_p3d_ids_corrector;
-  std::vector<int> m_vector_tracked_p3d_ids;
+  std::vector<int> m_vector_tracked_p3d_ids_local;
+  std::vector<int> m_vector_tracked_p3d_ids_global;
   std::vector<cv::Point3d> m_vector_initial_p3d;
 
   Frames m_frames;
