@@ -44,7 +44,7 @@ LocalTrackingHandler::track_frames(
   std::shared_ptr<LockFreeQueue> &queue_view_to_tracking)
 {
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
-  cv::moveWindow("Local Feature Tracking", 20,20);
+  cv::moveWindow("Local Feature Tracking", 0,0);
 
   bool print_tracking_info = true;
 
@@ -436,7 +436,8 @@ LocalTrackingHandler::print_tracking()
     std::cout << "m_vector_tracked_p3d_ids_corrector:" << std::endl;
     for (int i=0; i<m_vector_tracked_p3d_ids_corrector.size(); i++)
     {
-      std::cout << m_vector_tracked_p3d_ids_corrector[i] << "-" << m_vector_tracked_p3d_ids[i] << " | ";
+      std::cout << "ID Point3D: " << m_vector_tracked_p3d_ids[i] <<
+        " Point2D: " << m_frames.get_curr_frame()->keypoints_p2d[i] << " | ";
     } std::cout << " \n"<<  std::endl;
   }
 }
