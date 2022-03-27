@@ -5,13 +5,13 @@ namespace MonocularVO
 
 MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
-  : Node("bundle_adjustment_node", node_options), m_view_id(0), // 400
+  : Node("bundle_adjustment_node", node_options), m_frame_id(0), // 400
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
    "ORB","ORB",
    "BruteForce-Hamming","SEL_KNN",
-   800,999999,99999999,130,
+   100,999999,99999999,130,
    // The most important parameters:
-   300, 20,
+   10, 20,
    20, 8,0.3)
 {
   // Local Tracking ::
@@ -30,7 +30,7 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
-  int ms = 5;
+  int ms = 25;
   m_timer_provide_data_frame = this->create_wall_timer(
       std::chrono::milliseconds(ms),
       std::bind(&MonocularVONode::CallbackImageProvider,
@@ -40,15 +40,15 @@ MonocularVONode::MonocularVONode(
 void
 MonocularVONode::CallbackImageProvider()
 {
-  if (m_view_id <840)
+  if (m_frame_id <840)
   {
-    std::string img_name = "/home/goktug/projects/MonocularVisualOdometry/src/images/" +std::to_string(m_view_id) + ".jpg";
+    std::string img_name = "/home/goktug/projects/MonocularVisualOdometry/src/images/" +std::to_string(m_frame_id) + ".jpg";
     //std::string img_name = "/home/goktug/projects/MonocularVO/src/images/img.jpeg";
     cv::Mat img = imread(
         img_name,
         cv::IMREAD_COLOR);
 
-    if (m_view_id == 0)
+    if (m_frame_id == 0)
     std::cout << "Image x:" << img.cols << " y:"  << img.rows << std::endl;
 
 
@@ -71,13 +71,13 @@ MonocularVONode::CallbackImageProvider()
     Vision::make_img_3_channel(img_gray_with_kpts);
 
     cv::putText(img_gray_with_kpts,
-                std::to_string(m_view_id),
+                std::to_string(m_frame_id),
                 cv::Point(75, 400),
                 cv::FONT_HERSHEY_DUPLEX,
                 3, CV_RGB(0, 0, 255), 4);
 
     view->image_gray = img_gray;
-    view->frame_id = m_view_id;
+    view->frame_id = m_frame_id;
     view->width = img.cols;
     view->height = img.rows;
     view->image_gray_with_kpts = img_gray_with_kpts;
@@ -89,8 +89,8 @@ MonocularVONode::CallbackImageProvider()
 
   }
 //  else
-//    m_view_id = 0;
-  m_view_id++;
+//    m_frame_id = 0;
+  m_frame_id++;
 }
 
 

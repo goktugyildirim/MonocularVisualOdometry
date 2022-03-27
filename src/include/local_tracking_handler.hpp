@@ -25,7 +25,8 @@
 namespace MonocularVO
 {
 
-class LocalTrackingHandler {
+class LocalTrackingHandler
+{
  public:
 
   using FrameSharedPtr = std::shared_ptr<Frame>;
@@ -66,6 +67,7 @@ private:
                                    const int& count_diff_frame_threshold,
                                    const bool& print_info);
   std::vector<ObservationSharedPtr> build_observations();
+  void print_tracking();
 
   std::atomic_bool m_is_init_done;
   std::atomic_bool m_is_ref_frame_selected;
@@ -73,7 +75,7 @@ private:
   int m_counter_p3d;
   std::vector<int> m_vector_tracked_p3d_ids_corrector;
   std::vector<int> m_vector_tracked_p3d_ids;
-  //std::vector<cv::Point3d> m_vector_tracked_p3d;
+  std::vector<cv::Point3d> m_vector_initial_p3d;
 
   Frames m_frames;
 

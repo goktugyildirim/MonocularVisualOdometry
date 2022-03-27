@@ -40,7 +40,7 @@ private:
   // Timer to provide DataFrame:
   rclcpp::TimerBase::SharedPtr m_timer_provide_data_frame;
   void CallbackImageProvider();
-  int m_view_id;
+  int m_frame_id;
   std::mutex m_mutex;
 
 };

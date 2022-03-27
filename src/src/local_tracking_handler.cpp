@@ -46,6 +46,8 @@ LocalTrackingHandler::track_frames(
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
   cv::moveWindow("Local Feature Tracking", 20,20);
 
+  bool print_tracking_info = false;
+
   while (m_keep_tracking)
   {
     auto start_wait_for_frame = std::chrono::steady_clock::now();
@@ -65,6 +67,9 @@ LocalTrackingHandler::track_frames(
     {
       LocalTrackingHandler::make_reference_frame(curr_frame);
       std::vector<ObservationSharedPtr> new_obs = build_observations();
+      m_is_init_done = false;
+      if (print_tracking_info)
+        print_tracking();
       continue;
     }
     // Tracking spins:
@@ -73,7 +78,6 @@ LocalTrackingHandler::track_frames(
     {
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
-
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(4,
                                                                   30,
                                                                   false);
@@ -101,6 +105,7 @@ LocalTrackingHandler::track_frames(
       {
         std::cout << "New local map detected." << std::endl;
         LocalTrackingHandler::make_reference_frame(curr_frame);
+        std::vector<ObservationSharedPtr> new_obs = build_observations();
         m_is_init_done = false;
       }
       auto end_local_tracking_spin = std::chrono::steady_clock::now();
@@ -114,6 +119,9 @@ LocalTrackingHandler::track_frames(
     std::cout << "Reference frame id: " << m_frames.get_ref_frame()->frame_id << std::endl;
     // Build observations ##########################################################################
     std::vector<ObservationSharedPtr> new_obs = build_observations();
+    if (print_tracking_info)
+      print_tracking();
+    std::cout << "Curr tracked landmark: " << m_vector_tracked_p3d_ids.size() << std::endl;
     // oef Build observations ######################################################################
 
     //m_frames.print_info();
@@ -146,8 +154,39 @@ LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
   std::iota (std::begin(m_vector_tracked_p3d_ids),
             std::end(m_vector_tracked_p3d_ids), m_counter_p3d);
 
+  for (int i=0; i<m_frames.get_ref_frame()->keypoints.size(); i++)
+    m_vector_initial_p3d.push_back(cv::Point3d {0,0,0});
+
   m_counter_p3d += m_frames.get_ref_frame()->keypoints.size();
+
 }
+
+std::vector<ObservationSharedPtr>
+LocalTrackingHandler::build_observations()
+{
+  std::vector<ObservationSharedPtr> new_obs;
+  int id_frame = m_frames.get_curr_frame()->frame_id;
+  for (int i=0; i<m_vector_tracked_p3d_ids.size(); i++)
+  {
+    int id_p3d = m_vector_tracked_p3d_ids[i];
+    cv::Point2d p2d = m_frames.get_curr_frame()->keypoints_p2d.at(i);
+    ObservationSharedPtr observation = std::make_shared<Observation>(
+        id_frame, id_p3d, cv::Vec6d {0,0,0,0,0,0},
+        cv::Mat(), p2d, m_vector_initial_p3d[id_p3d],
+        m_frames.get_curr_frame()->is_keyframe,
+        m_frames.get_curr_frame()->is_ref_frame,
+        false, m_is_init_done);
+    new_obs.push_back(observation);
+  }
+  return new_obs;
+}
+
+
+
+
+
+
+
 
 LocalTrackingHandler::TrackingEvaluation
 LocalTrackingHandler::eval_tracking(const double& avg_px_dis_threshold,
@@ -388,24 +427,24 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   cv::waitKey(1);
 }
 
-std::vector<ObservationSharedPtr>
-LocalTrackingHandler::build_observations()
+void
+LocalTrackingHandler::print_tracking()
 {
-  std::vector<ObservationSharedPtr> new_obs;
-  int id_frame = m_frames.get_curr_frame()->frame_id;
+  std::cout << "m_vector_tracked_p3d_ids_corrector:" << std::endl;
+  for (int i=0; i<m_vector_tracked_p3d_ids_corrector.size(); i++)
+  {
+    std::cout << m_vector_tracked_p3d_ids_corrector[i] << " ";
+  }
+  std::cout << "\nm_vector_tracked_p3d_ids:" << std::endl;
   for (int i=0; i<m_vector_tracked_p3d_ids.size(); i++)
   {
-    int id_p3d = m_vector_tracked_p3d_ids[i];
-    cv::Point2d p2d = m_frames.get_curr_frame()->keypoints_p2d.at(i);
-    ObservationSharedPtr observation = std::make_shared<Observation>(
-        id_frame, id_p3d, cv::Vec6d {0,0,0,0,0,0},
-        cv::Mat(), p2d, cv::Point3d {0,0,0},
-        m_frames.get_curr_frame()->is_keyframe,
-        m_frames.get_curr_frame()->is_ref_frame,
-        false, m_is_init_done);
-    new_obs.push_back(observation);
+    std::cout << m_vector_tracked_p3d_ids[i] << " ";
   }
-  return new_obs;
+  std::cout << "\nm_vector_initial_p3d:" << std::endl;
+  for (int i=0; i<m_vector_initial_p3d.size(); i++)
+  {
+    std::cout << m_vector_initial_p3d[i] << " ";
+  }
 }
 
 /*
