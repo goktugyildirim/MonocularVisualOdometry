@@ -98,14 +98,14 @@ LocalTrackingHandler::track_frames(
         {
 
         }
-
+        std::vector<ObservationSharedPtr> new_obs = build_observations();
       } // eof is_is_tracking_ok
 
       if (!m_tracking_evaluation.is_tracking_ok)
       {
         std::cout << "New local map detected." << std::endl;
-        LocalTrackingHandler::make_reference_frame(curr_frame);
         std::vector<ObservationSharedPtr> new_obs = build_observations();
+        LocalTrackingHandler::make_reference_frame(curr_frame);
         m_is_init_done = false;
       }
       auto end_local_tracking_spin = std::chrono::steady_clock::now();
@@ -118,11 +118,10 @@ LocalTrackingHandler::track_frames(
     // Each new frame comes:
     std::cout << "Reference frame id: " << m_frames.get_ref_frame()->frame_id << std::endl;
     // Build observations ##########################################################################
-    std::vector<ObservationSharedPtr> new_obs = build_observations();
+    //std::vector<ObservationSharedPtr> new_obs = build_observations();
     if (print_tracking_info)
       print_tracking();
     std::cout << "Curr tracked landmark: " << m_vector_tracked_p3d_ids.size() << std::endl;
-    // oef Build observations ######################################################################
 
     //m_frames.print_info();
     std::cout << "\n###########################"

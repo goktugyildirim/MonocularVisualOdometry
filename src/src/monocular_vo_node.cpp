@@ -30,7 +30,7 @@ MonocularVONode::MonocularVONode(
       "/image_match", 50);
   // eof Local Tracking
 
-  int ms = 25;
+  int ms = 5;
   m_timer_provide_data_frame = this->create_wall_timer(
       std::chrono::milliseconds(ms),
       std::bind(&MonocularVONode::CallbackImageProvider,
