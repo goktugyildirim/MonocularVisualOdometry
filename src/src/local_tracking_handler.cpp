@@ -46,7 +46,7 @@ LocalTrackingHandler::track_frames(
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
   cv::moveWindow("Local Feature Tracking", 20,20);
 
-  bool print_tracking_info = false;
+  bool print_tracking_info = true;
 
   while (m_keep_tracking)
   {
@@ -160,6 +160,7 @@ LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
   m_counter_p3d += m_frames.get_ref_frame()->keypoints.size();
 
 }
+
 
 std::vector<ObservationSharedPtr>
 LocalTrackingHandler::build_observations()
@@ -430,20 +431,13 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
 void
 LocalTrackingHandler::print_tracking()
 {
-  std::cout << "m_vector_tracked_p3d_ids_corrector:" << std::endl;
-  for (int i=0; i<m_vector_tracked_p3d_ids_corrector.size(); i++)
+  if (m_vector_tracked_p3d_ids_corrector.size() == m_vector_tracked_p3d_ids.size())
   {
-    std::cout << m_vector_tracked_p3d_ids_corrector[i] << " ";
-  }
-  std::cout << "\nm_vector_tracked_p3d_ids:" << std::endl;
-  for (int i=0; i<m_vector_tracked_p3d_ids.size(); i++)
-  {
-    std::cout << m_vector_tracked_p3d_ids[i] << " ";
-  }
-  std::cout << "\nm_vector_initial_p3d:" << std::endl;
-  for (int i=0; i<m_vector_initial_p3d.size(); i++)
-  {
-    std::cout << m_vector_initial_p3d[i] << " ";
+    std::cout << "m_vector_tracked_p3d_ids_corrector:" << std::endl;
+    for (int i=0; i<m_vector_tracked_p3d_ids_corrector.size(); i++)
+    {
+      std::cout << m_vector_tracked_p3d_ids_corrector[i] << "-" << m_vector_tracked_p3d_ids[i] << " | ";
+    } std::cout << " \n"<<  std::endl;
   }
 }
 
