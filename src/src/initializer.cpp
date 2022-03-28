@@ -35,18 +35,18 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
 
 
   // Firstly, undistort points:
-  cv::undistortPoints(tracked_ref_keypoints,
+/*  cv::undistortPoints(tracked_ref_keypoints,
                       tracked_ref_keypoints,
                       m_params.K,
                       m_params.mat_dist_coeff);
   cv::undistortPoints(tracked_curr_keypoints,
                       tracked_curr_keypoints,
                       m_params.K,
-                      m_params.mat_dist_coeff);
+                      m_params.mat_dist_coeff);*/
 
   // Calculate relative pose
   cv::Mat E, inlier_mask;
-  bool use_5pt = true;
+  bool use_5pt = false;
   if (use_5pt)
   {
     E = cv::findEssentialMat(tracked_ref_keypoints,
@@ -58,7 +58,7 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
     cv::Mat F = cv::findFundamentalMat(tracked_ref_keypoints,
                                        tracked_curr_keypoints,
                                        cv::FM_RANSAC,
-                                       0.01,0.99,
+                                       1,0.99,
                                        inlier_mask);
     E = m_params.K.t() * F * m_params.K;
   }
@@ -71,7 +71,6 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
   cv::Mat R, t;
 
 
-  std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
   int inlier_num = cv::recoverPose(
       E,tracked_ref_keypoints,tracked_curr_keypoints,
       R, t,f,c, inlier_mask);
@@ -79,12 +78,11 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
   // Scale can ben given from speed odometer or IMU | x = x0 + V*dt
   // R_curr = R*R_curr;  t_curr = t_curr + scale*(R_curr*t);
 
-  std::cout << " ddd"  << std::endl;
 
   std::cout << inlier_num << std::endl;
   std::cout << inlier_mask.rows << " " << inlier_mask.cols << std::endl;
   if (inlier_num > 50) {
-    std::cout << " ddd"  << std::endl;
+
 
     std::cout << inlier_num << std::endl;
     std::cout << inlier_mask.rows << " " << inlier_mask.cols << std::endl;
@@ -92,7 +90,7 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
     T(cv::Rect(0, 0, 3, 3)) = R * 1.0;
     T.col(3).rowRange(0, 3) = t * 1.0;
 
-    std::cout << " ddd"  << std::endl;
+
 
     // Reconstruct 3D points (triangulation)
     cv::Mat P0 = m_params.K * cv::Mat::eye(3, 4, CV_64F);
@@ -107,7 +105,13 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
     X.row(2) = X.row(2) / X.row(3);
     X.row(3) = 1;
 
-    std::cout << " ddd"  << std::endl;
+    std::vector<cv::Point3d> vec_p3d;
+/*
+    for (int i=0; i<X.rows; i++)
+    {
+      cv::Point3d p3d = X.at<double>()
+    }
+*/
 
 
   }
