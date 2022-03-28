@@ -83,7 +83,7 @@ LocalTrackingHandler::track_frames(
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(m_params.max_angular_px_disp,
-                                                                  30,
+                                                                  10,
                                                                   true);
       LocalTrackingHandler::show_tracking(1.2);
 
@@ -98,6 +98,16 @@ LocalTrackingHandler::track_frames(
                                                   m_vector_tracked_p3d_ids_global,
                                                   m_vector_initial_p3d,
                                                   1);
+          if (m_is_init_done)
+          {
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(10000ms);
+            LocalTrackingHandler::show_tracking(1.2);
+            std::cout << "Initialization done." << std::endl;
+            std::this_thread::sleep_for(1000000ms);
+          }
+
+
 
         }
 
