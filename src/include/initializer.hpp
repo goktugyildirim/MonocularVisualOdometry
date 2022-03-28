@@ -19,8 +19,12 @@ public:
 
   bool try_init(FrameSharedPtr& ref_frame,
                 FrameSharedPtr& curr_frame,
-                std::vector<int>&vector_tracked_p3d_ids_corrector,
+                std::vector<int>&vector_tracked_p3d_ids_local,
+                std::vector<int>&vector_tracked_p3d_ids_global,
+                std::vector<cv::Point3d>& vector_initial_p3d,
                 const double& scale);
+
+
 
 private:
   MonocularVO::Params m_params;

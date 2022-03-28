@@ -46,7 +46,7 @@ LocalTrackingHandler::track_frames(
   cv::namedWindow( "Local Feature Tracking", cv::WINDOW_FULLSCREEN);
   cv::moveWindow("Local Feature Tracking", 0,0);
 
-  bool print_tracking_info = true;
+  bool print_tracking_info = false;
 
   while (m_keep_tracking)
   {
@@ -82,9 +82,9 @@ LocalTrackingHandler::track_frames(
       //  * Add grid orb extractor feature.
       LocalTrackingHandler::track_observations_optical_flow(50,
       m_params.ransac_outlier_threshold);
-      m_tracking_evaluation = LocalTrackingHandler::eval_tracking(4,
+      m_tracking_evaluation = LocalTrackingHandler::eval_tracking(m_params.max_angular_px_disp,
                                                                   30,
-                                                                  false);
+                                                                  true);
       LocalTrackingHandler::show_tracking(1.2);
 
       if (m_tracking_evaluation.is_tracking_ok)
@@ -95,7 +95,10 @@ LocalTrackingHandler::track_frames(
           FrameSharedPtr ref_frame =  m_frames.get_ref_frame();
           m_is_init_done = m_initializer.try_init(ref_frame, curr_frame,
                                                   m_vector_tracked_p3d_ids_local,
+                                                  m_vector_tracked_p3d_ids_global,
+                                                  m_vector_initial_p3d,
                                                   1);
+
         }
 
         // Tracking is ok | initialized
@@ -125,6 +128,7 @@ LocalTrackingHandler::track_frames(
     //std::vector<ObservationSharedPtr> new_obs = build_observations();
     if (print_tracking_info)
       print_tracking();
+    // Note that: It only stores the Point3D ids [N ... N+M] not start from zero.
     std::cout << "Curr tracked landmark: " << m_vector_tracked_p3d_ids_global.size() << std::endl;
 
     //m_frames.print_info();
