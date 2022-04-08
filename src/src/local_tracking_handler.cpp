@@ -166,6 +166,10 @@ LocalTrackingHandler::track_observations_descriptor_matching(
   FrameSharedPtr curr_frame = m_frames.get_curr_frame();
 
   Vision::extract_features(curr_frame, m_params);
+
+  std::cout << "Keypoints prev: " << prev_frame->keypoints_p2d.size() << std::endl;
+  std::cout << "Keypoints curr: " << curr_frame->keypoints_p2d.size() << std::endl;
+
   std::vector<cv::DMatch> matches;
   Vision::match_descriptors(prev_frame->keypoints,
                             curr_frame->keypoints,
@@ -174,6 +178,9 @@ LocalTrackingHandler::track_observations_descriptor_matching(
                             matches,
                             m_params);
 
+  assert(prev_frame->keypoints.size() == prev_frame->keypoints_p2d.size());
+  assert(curr_frame->keypoints.size() == curr_frame->keypoints_p2d.size());
+
   std::cout << "Keypoints prev: " << prev_frame->keypoints_p2d.size() << std::endl;
   std::cout << "Keypoints curr: " << curr_frame->keypoints_p2d.size() << std::endl;
   std::cout << "Matches: " << matches.size() << std::endl;
@@ -181,17 +188,25 @@ LocalTrackingHandler::track_observations_descriptor_matching(
   // Determine newly tracked points ids:
   std::vector<int> vector_curr_tracked_p3d_ids_local;
   std::vector<int> vector_curr_tracked_p3d_ids_global;
+  std::vector<cv::Point2d> vector_prev_keypoints_p2d;
+  std::vector<cv::Point2d> vector_curr_keypoints_p2d;
   for (const auto &match : matches)
   {
     int id_tracked_p3d_local = m_vector_tracked_p3d_ids_local[match.queryIdx];
     vector_curr_tracked_p3d_ids_local.push_back(id_tracked_p3d_local);
     int id_tracked_p3d_global = m_vector_tracked_p3d_ids_global[match.queryIdx];
     vector_curr_tracked_p3d_ids_global.push_back(id_tracked_p3d_global);
+
+    cv::Point2d prev_keypoint_p2d = prev_frame->keypoints_p2d[match.queryIdx];
+    vector_prev_keypoints_p2d.push_back(prev_keypoint_p2d);
+    cv::Point2d curr_keypoint_p2d = curr_frame->keypoints_p2d[match.trainIdx];
+    vector_curr_keypoints_p2d.push_back(curr_keypoint_p2d);
   }
   m_vector_tracked_p3d_ids_local.clear();
   m_vector_tracked_p3d_ids_global.clear();
   m_vector_tracked_p3d_ids_local = vector_curr_tracked_p3d_ids_local;
   m_vector_tracked_p3d_ids_global = vector_curr_tracked_p3d_ids_global;
+
 
 
 
