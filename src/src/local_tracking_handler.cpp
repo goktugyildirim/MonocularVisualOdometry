@@ -80,8 +80,13 @@ LocalTrackingHandler::track_frames(
       //  * Add descriptor tracker feature.
       //  * Try to decrease ORB extraction time consume.
       //  * Add grid orb extractor feature.
-      LocalTrackingHandler::track_observations_optical_flow(50,
-      m_params.ransac_outlier_threshold);
+
+
+//      LocalTrackingHandler::track_observations_optical_flow(50,
+//      m_params.ransac_outlier_threshold);
+
+      LocalTrackingHandler::track_observations_descriptor_matching(m_params.ransac_outlier_threshold);
+
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(m_params.max_angular_px_disp,
                                                                   10,
                                                                   true);
@@ -150,6 +155,52 @@ LocalTrackingHandler::track_frames(
 
   cv::destroyAllWindows();
 }
+
+
+void
+LocalTrackingHandler::track_observations_descriptor_matching(
+  const double &repr_threshold)
+{
+  std::cout << "Tracking observations using descriptor matching." << std::endl;
+  FrameSharedPtr prev_frame = m_frames.get_prev_frame();
+  FrameSharedPtr curr_frame = m_frames.get_curr_frame();
+
+  Vision::extract_features(curr_frame, m_params);
+  std::vector<cv::DMatch> matches;
+  Vision::match_descriptors(prev_frame->keypoints,
+                            curr_frame->keypoints,
+                            prev_frame->descriptors,
+                            curr_frame->descriptors,
+                            matches,
+                            m_params);
+
+  std::cout << "Keypoints prev: " << prev_frame->keypoints_p2d.size() << std::endl;
+  std::cout << "Keypoints curr: " << curr_frame->keypoints_p2d.size() << std::endl;
+  std::cout << "Matches: " << matches.size() << std::endl;
+
+  // Determine newly tracked points ids:
+  std::vector<int> vector_curr_tracked_p3d_ids_local;
+  std::vector<int> vector_curr_tracked_p3d_ids_global;
+  for (const auto &match : matches)
+  {
+    int id_tracked_p3d_local = m_vector_tracked_p3d_ids_local[match.queryIdx];
+    vector_curr_tracked_p3d_ids_local.push_back(id_tracked_p3d_local);
+    int id_tracked_p3d_global = m_vector_tracked_p3d_ids_global[match.queryIdx];
+    vector_curr_tracked_p3d_ids_global.push_back(id_tracked_p3d_global);
+  }
+  m_vector_tracked_p3d_ids_local.clear();
+  m_vector_tracked_p3d_ids_global.clear();
+  m_vector_tracked_p3d_ids_local = vector_curr_tracked_p3d_ids_local;
+  m_vector_tracked_p3d_ids_global = vector_curr_tracked_p3d_ids_global;
+
+
+
+
+
+
+  std::this_thread::sleep_for(1000000ms);
+}
+
 
 void
 LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
@@ -460,6 +511,7 @@ LocalTrackingHandler::print_tracking()
     } std::cout << " \n"<<  std::endl;
   }
 }
+
 
 /*
 

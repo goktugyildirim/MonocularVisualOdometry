@@ -78,19 +78,11 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
   // Scale can ben given from speed odometer or IMU | x = x0 + V*dt
   // R_curr = R*R_curr;  t_curr = t_curr + scale*(R_curr*t);
 
-
-  std::cout << inlier_num << std::endl;
-  std::cout << inlier_mask.rows << " " << inlier_mask.cols << std::endl;
   if (inlier_num > 50) {
 
-
-    std::cout << inlier_num << std::endl;
-    std::cout << inlier_mask.rows << " " << inlier_mask.cols << std::endl;
     cv::Mat T = cv::Mat::eye(4, 4, R.type());
     T(cv::Rect(0, 0, 3, 3)) = R * 1.0;
     T.col(3).rowRange(0, 3) = t * 1.0;
-
-
 
     // Reconstruct 3D points (triangulation)
     cv::Mat P0 = m_params.K * cv::Mat::eye(3, 4, CV_64F);
@@ -115,7 +107,6 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
 
 
   }
-
 
   return true;
 }

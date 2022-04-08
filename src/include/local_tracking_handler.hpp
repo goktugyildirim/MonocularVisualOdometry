@@ -12,6 +12,7 @@
 #include <memory>
 #include "frame.hpp"
 #include <types.hpp>
+#include <algorithm>
 #include "vision.hpp"
 #include "utils.hpp"
 #include "local_handler.hpp"
@@ -24,11 +25,11 @@
 
 namespace MonocularVO
 {
+  using namespace std::chrono_literals;
 
 class LocalTrackingHandler
 {
  public:
-
   using FrameSharedPtr = std::shared_ptr<Frame>;
   using LockFreeQueue = moodycamel::ConcurrentQueue<std::shared_ptr<Frame>>;
   //using LockFreeQueueBatch = moodycamel::ConcurrentQueue<Batch>;
@@ -62,6 +63,7 @@ private:
   void make_reference_frame(FrameSharedPtr& curr_frame);
   void track_frames(std::shared_ptr<LockFreeQueue> &queue_view_to_tracking);
   void track_observations_optical_flow(const int& window_size, const double&repr_threshold);
+  void track_observations_descriptor_matching(const double&repr_threshold);
   void show_tracking(const float& downs_ratio);
   TrackingEvaluation eval_tracking(const double& avg_px_dis_threshold,
                                    const int& count_diff_frame_threshold,
