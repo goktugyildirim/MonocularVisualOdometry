@@ -42,15 +42,7 @@ class Utils
   remove_vector_elements_with_list_of_index(const std::vector<int>& list_of_index,
                                             std::vector<int>& vector_to_remove_elements);
 
-  static void
-  remove_vector_of_keypoints_p2d_with_list_of_index(
-      const std::vector<int> &list_of_index,
-      std::vector<cv::Point2f> &vector_to_remove_elements);
 
-  static void
-  remove_vector_of_keypoints_with_list_of_index(
-      const std::vector<int> &list_of_index,
-      std::vector<cv::KeyPoint> &vector_to_remove_elements);
 
 
   static void

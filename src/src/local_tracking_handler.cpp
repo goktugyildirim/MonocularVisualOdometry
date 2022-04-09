@@ -225,12 +225,6 @@ LocalTrackingHandler::track_observations_descriptor_matching(
                                                    m_vector_tracked_p3d_ids_local);
   Utils::remove_vector_elements_with_list_of_index(vector_not_matched_prev_frame_ids,
                                                    m_vector_tracked_p3d_ids_global);
-  Utils::remove_vector_of_keypoints_p2d_with_list_of_index(vector_not_matched_prev_frame_ids,
-                                                           prev_frame->keypoints_p2d);
-
-
-
-
   // print m_vector_tracked_p3d_ids_local
   std::cout << "\nm_vector_tracked_p3d_ids_local: ";
   for (size_t i = 0; i < m_vector_tracked_p3d_ids_local.size(); ++i)
@@ -239,11 +233,13 @@ LocalTrackingHandler::track_observations_descriptor_matching(
   }std::cout << std::endl;
 
   // print prev frame keypoints:
+/*
 //  std::cout << "Prev frame keypoints: " << std::endl;
 //  for (size_t i = 0; i < prev_frame->keypoints.size(); ++i)
 //  {
 //    std::cout << prev_frame->keypoints[i].pt << " ";
 //  }std::cout << std::endl;
+*/
 
 
 

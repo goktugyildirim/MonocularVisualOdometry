@@ -127,46 +127,32 @@ Utils::remove_vector_elements_with_list_of_index(
   vector_to_remove_elements = cp;
 }
 
-
-void
-Utils::remove_vector_of_keypoints_p2d_with_list_of_index(
-  const std::vector<int> &list_of_index,
-  std::vector<cv::Point2f> &vector_to_remove_elements)
-{
-  std::vector<cv::Point2f> cp;
-  for (int i=0; i<vector_to_remove_elements.size(); i++)
-  {
-    bool take_element = true;
-    for (const int& index: list_of_index)
-    {
-      if (i == index)
-      {
-        take_element = false;
-        break;
-      }
-    }
-    if (take_element)
-    {
-      cp.push_back(vector_to_remove_elements[i]);
-    }
-  }
-  std::cout << "Prev frame kpts: "  << std::endl;
-  vector_to_remove_elements.clear();
-  for(const cv::Point2f& p: cp)
-  {
-    std::cout << p << std::endl;
-    vector_to_remove_elements.push_back(p);
-  }std::cout << std::endl;
-
-
-  for(const cv::Point2f& p: vector_to_remove_elements)
-  {
-    std::cout << p << std::endl;
-    vector_to_remove_elements.push_back(p);
-  }std::cout << std::endl;
-
-
-}
+//
+//void
+//Utils::remove_vector_of_keypoints_p2d_with_list_of_index(
+//    const std::vector<int>& list_of_index,
+//    FrameSharedPtr& frame)
+//{
+//  std::vector<cv::Point2f> cp;
+//  for (int i=0; i<frame->keypoints_p2d.size(); i++)
+//  {
+//    bool take_element = true;
+//    for (const int& index: list_of_index)
+//    {
+//      if (i == index)
+//      {
+//        take_element = false;
+//        break;
+//      }
+//    }
+//    if (take_element)
+//    {
+//      cp.push_back(frame->keypoints_p2d[i]);
+//    }
+//  }
+//  frame->keypoints_p2d.clear();
+//  frame->keypoints_p2d = cp;
+//}
 
 /*void
 Utils::remove_vector_of_keypoints_with_list_of_index(
