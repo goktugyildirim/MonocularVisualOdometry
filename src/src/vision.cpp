@@ -414,7 +414,7 @@ MonocularVO::Vision::extract_features(
   Vision::detect_keypoints(params, frame->keypoints, frame->image_gray);
   Vision::desc_keypoints(params, frame->keypoints, frame->descriptors,
                          frame->image_gray);
-  std::cout << "Detected keypoint count: " << frame->keypoints.size() << std::endl;
+  //std::cout << "Detected keypoint count: " << frame->keypoints.size() << std::endl;
 
   // Optical flow tracker takes vector<Point2f> as an input
   for (const auto& keypoint: frame->keypoints)

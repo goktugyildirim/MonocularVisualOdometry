@@ -19,6 +19,7 @@ class Frame
   int width{};
   std::vector<cv::KeyPoint> keypoints{};
   cv::Mat descriptors;
+  cv::Mat descriptors_tracked;
 
   bool is_ref_frame = false;
 

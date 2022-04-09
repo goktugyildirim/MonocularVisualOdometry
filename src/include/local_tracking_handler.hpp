@@ -75,7 +75,7 @@ private:
   std::atomic_bool m_is_ref_frame_selected;
 
   std::vector<cv::KeyPoint> m_vector_ref_keypoints;
-  std::vector<cv::Point2d> m_vector_ref_keypoints_p2d;
+  std::vector<cv::Point2f> m_vector_ref_keypoints_p2d;
 
   size_t m_counter_p3d;
   std::vector<int> m_vector_tracked_p3d_ids_local;

@@ -9,9 +9,9 @@ MonocularVONode::MonocularVONode(
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
    "ORB","ORB",
    "BruteForce-Hamming","SEL_KNN",
-   500,999999,99999999,130,
+   15,70,99999999,130,
    // The most important parameters:
-   100, 5,
+   1, 5,
    20, 10,0.3)
 {
   // Local Tracking ::
