@@ -108,7 +108,7 @@ Initializer::try_init(FrameSharedPtr& ref_frame,
 
   }
 
-  return true;
+  return false;
 }
 
 }  // namespace MonocularVO
