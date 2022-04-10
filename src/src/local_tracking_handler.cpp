@@ -75,12 +75,6 @@ LocalTrackingHandler::track_frames(
     auto start_local_tracking_spin = std::chrono::steady_clock::now();
     if (m_is_ref_frame_selected)
     {
-      // TODO:
-      //  * Add descriptor tracker feature.
-      //  * Try to decrease ORB extraction time consume.
-      //  * Add grid orb extractor feature.
-
-
       //LocalTrackingHandler::track_observations_optical_flow(50,m_params.ransac_outlier_threshold);
        LocalTrackingHandler::track_observations_descriptor_matching(m_params.ransac_outlier_threshold);
 
@@ -157,8 +151,6 @@ void
 LocalTrackingHandler::track_observations_descriptor_matching(
   const double &repr_threshold)
 {
-  std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
-
   assert(prev_frame->keypoints.size() == prev_frame->keypoints_p2d.size());
   assert(prev_frame->keypoints.size() == m_vector_tracked_p3d_ids_local.size());
   assert(m_vector_tracked_p3d_ids_global.size() == m_vector_tracked_p3d_ids_local.size());
@@ -166,22 +158,13 @@ LocalTrackingHandler::track_observations_descriptor_matching(
   FrameSharedPtr prev_frame = m_frames.get_prev_frame();
   FrameSharedPtr curr_frame = m_frames.get_curr_frame();
 
-  m_params.max_orb_detect = 15;
   Vision::extract_features(curr_frame, m_params);
 
-  //std::cout << "Count prev frame keypoints: " << prev_frame->keypoints_p2d.size() << std::endl;
-  //std::cout << "Count curr frame keypoints: " << curr_frame->keypoints_p2d.size() << "\n" << std::endl;
   // print prev frame kpts:
-  std::cout << "Prev frame kpts: "  << std::endl;
-  Utils::print_keypoints_with_indexes(prev_frame->keypoints);
-  std::cout << "Curr frame kpts: "  << std::endl;
-  Utils::print_keypoints_with_indexes(curr_frame->keypoints);
-
-  std::cout << prev_frame->descriptors.rows << " " <<
-      prev_frame->descriptors.cols << std::endl;
-
-  std::cout << curr_frame->descriptors.rows << " " <<
-      curr_frame->descriptors.cols << std::endl;
+//  std::cout << "Prev frame kpts: "  << std::endl;
+//  Utils::print_keypoints_with_indexes(prev_frame->keypoints);
+//  std::cout << "Curr frame kpts: "  << std::endl;
+//  Utils::print_keypoints_with_indexes(curr_frame->keypoints);
 
   std::vector<cv::DMatch> matches;
   std::cout << "Match descriptors..." << std::endl;
@@ -192,16 +175,10 @@ LocalTrackingHandler::track_observations_descriptor_matching(
                             matches,
                             m_params);
 
-  std::cout << prev_frame->descriptors.rows << " " <<
-      prev_frame->descriptors.cols << std::endl;
-
-  std::cout << curr_frame->descriptors.rows << " " <<
-      curr_frame->descriptors.cols << std::endl;
-
   assert(prev_frame->keypoints.size() == prev_frame->keypoints_p2d.size());
   assert(curr_frame->keypoints.size() == curr_frame->keypoints_p2d.size());
 
-  std::cout << "\nMatch count: " << matches.size() << std::endl;
+  std::cout << "Match count: " << matches.size() << std::endl;
 
   // Handle prev frame:
   std::vector<int> matched_ids_prev_frame;
@@ -212,14 +189,15 @@ LocalTrackingHandler::track_observations_descriptor_matching(
   Utils::get_not_matched_kpt_ids(prev_frame, matches,
                                  not_matched_ids_prev_frame,
                                  true);
-  std::cout << "\nCount not matched prev frame keypoints: " <<
-      not_matched_ids_prev_frame.size() << std::endl;
 
-  std::cout << "Matched ids of prev frame: ";
-  Utils::print_vector_elements(matched_ids_prev_frame);
+//  std::cout << "Count not matched prev frame keypoints: " <<
+//      not_matched_ids_prev_frame.size() << std::endl;
 
-  std::cout << "Not matched ids of prev frame: " << std::endl;
-  Utils::print_vector_elements(not_matched_ids_prev_frame);
+//  std::cout << "Matched ids of prev frame: ";
+//  Utils::print_vector_elements(matched_ids_prev_frame);
+//
+//  std::cout << "Not matched ids of prev frame: " << std::endl;
+//  Utils::print_vector_elements(not_matched_ids_prev_frame);
 
   // New prev frame keypoints:
   std::vector<cv::KeyPoint> new_prev_frame_keypoints;
@@ -238,8 +216,8 @@ LocalTrackingHandler::track_observations_descriptor_matching(
   for (const auto &match : matches)
     matched_ids_curr_frame.push_back(match.trainIdx);
 
-  std::cout << "Matched ids of curr frame: ";
-  Utils::print_vector_elements(matched_ids_curr_frame);
+//  std::cout << "Matched ids of curr frame: ";
+//  Utils::print_vector_elements(matched_ids_curr_frame);
 
   // New curr frame keypoints:
   std::vector<cv::KeyPoint> new_curr_frame_keypoints;
@@ -252,49 +230,24 @@ LocalTrackingHandler::track_observations_descriptor_matching(
   curr_frame->keypoints = new_curr_frame_keypoints;
   curr_frame->keypoints_p2d = new_curr_frame_keypoints_p2d;
 
-  std::cout << "Prev frame kpts: ";
-  Utils::print_keypoints_with_indexes(prev_frame->keypoints);
-  std::cout << "Curr frame kpts: ";
-  Utils::print_keypoints_with_indexes(curr_frame->keypoints);
+//  std::cout << "Prev frame kpts: ";
+//  Utils::print_keypoints_with_indexes(prev_frame->keypoints);
+//  std::cout << "Curr frame kpts: ";
+//  Utils::print_keypoints_with_indexes(curr_frame->keypoints);
 
   // clear lost information:
   Utils::remove_lost_landmark_ids(not_matched_ids_prev_frame,
                                   m_vector_tracked_p3d_ids_local);
   Utils::remove_lost_landmark_ids(not_matched_ids_prev_frame,
                                   m_vector_tracked_p3d_ids_global);
-  // print m_vector_tracked_p3d_ids_local
-  std::cout << "\nm_vector_tracked_p3d_ids_local: ";
-  Utils::print_vector_elements(m_vector_tracked_p3d_ids_local);
-  std::cout << "m_vector_tracked_p3d_ids_global: ";
-  Utils::print_vector_elements(m_vector_tracked_p3d_ids_global);
-
-
-  cv::Mat new_descriptors;
-  std::cout << curr_frame->descriptors.rows << " " <<
-      curr_frame->descriptors.cols << std::endl;
-  Utils::update_curr_frame_descriptor(curr_frame->descriptors, matches,
-                                      new_descriptors);
-  curr_frame->descriptors.release();
-  curr_frame->descriptors = new_descriptors.clone();
-  std::cout << curr_frame->descriptors.rows << " " <<
-      curr_frame->descriptors.cols << std::endl;
-
-
-  // Clear curr frame descriptor rows associated with key-points that are not matched:
 
 
 
-
-  // TODO:: Fix bug! There is a bug in the descriptor update.
-
-  std::cout << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
-
-/*
   // Calculate Fundamental Matrix to refine tracked keypoints:
   cv::Mat inliers_F;
   cv::Mat F = cv::findFundamentalMat(
-      vector_prev_keypoints_p2d,
-      vector_curr_keypoints_p2d,
+      prev_frame->keypoints_p2d,
+      curr_frame->keypoints_p2d,
       cv::FM_RANSAC,
       repr_threshold,
       0.99, 500,
@@ -320,13 +273,29 @@ LocalTrackingHandler::track_observations_descriptor_matching(
       m_vector_tracked_p3d_ids_local.erase(
           m_vector_tracked_p3d_ids_local.begin() + i - indexCorrection);
 
-      vector_curr_keypoints_p2d_matched.erase(
-          vector_curr_keypoints_p2d_matched.begin() + i - indexCorrection);
+      curr_frame->keypoints_p2d.erase(
+          curr_frame->keypoints_p2d.begin() + i - indexCorrection);
+
+      curr_frame->keypoints.erase(
+          curr_frame->keypoints.begin() + i - indexCorrection);
 
       indexCorrection++;
     }
   }
-*/
+
+  std::cout << "Count curr frame keypoints: " << curr_frame->keypoints_p2d.size() << "\n" << std::endl;
+
+//  std::cout << "\nm_vector_tracked_p3d_ids_local: ";
+//  Utils::print_vector_elements(m_vector_tracked_p3d_ids_local);
+//  std::cout << "m_vector_tracked_p3d_ids_global: ";
+//  Utils::print_vector_elements(m_vector_tracked_p3d_ids_global);
+
+
+  cv::Mat new_descriptor;
+  Vision::desc_keypoints(m_params, curr_frame->keypoints, new_descriptor,
+                         curr_frame->image_gray);
+  curr_frame->descriptors.release();
+  curr_frame->descriptors = new_descriptor.clone();
 
 
 }
@@ -335,12 +304,16 @@ LocalTrackingHandler::track_observations_descriptor_matching(
 void
 LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
 {
+  std::cout << "Make ref" << std::endl;
   m_frames.set_curr_frame_is_ref_frame();
   m_is_ref_frame_selected = true;
   m_vector_tracked_p3d_ids_local.clear();
   m_vector_tracked_p3d_ids_global.clear();
   m_vector_ref_keypoints.clear();
   m_vector_ref_keypoints_p2d.clear();
+
+  curr_frame->descriptors.release();
+  curr_frame->descriptors = cv::Mat();
 
   Vision::extract_features(curr_frame, m_params);
 

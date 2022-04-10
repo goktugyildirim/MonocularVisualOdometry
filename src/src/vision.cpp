@@ -97,7 +97,7 @@ MonocularVO::Vision::keypoints_modern(
   else if (detectorType == "AKAZE")
     feature_detector = cv::AKAZE::create();
   else if (detectorType == "SIFT")
-    feature_detector = cv::SIFT::create();
+    feature_detector = cv::SIFT::create(300);
   else if (detectorType == "BRISK")
     feature_detector = cv::BRISK::create();
   else
@@ -125,7 +125,7 @@ MonocularVO::Vision::desc_keypoints(
   else if (params.descriptor_type=="AKAZE")
     extractor = cv::AKAZE::create();
   else if (params.descriptor_type=="SIFT")
-    extractor = cv::SIFT::create();
+    extractor = cv::SIFT::create(300);
   else if (params.descriptor_type=="ORB")
     extractor = cv::ORB::create(params.max_orb_detect);
   else if (params.descriptor_type=="FREAK")
