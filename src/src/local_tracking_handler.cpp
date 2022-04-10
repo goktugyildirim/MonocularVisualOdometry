@@ -62,7 +62,7 @@ LocalTrackingHandler::track_frames(
               << " millisecond." << std::endl;
 
 
-    // Only first iteration:
+    // Only first iteration maybe requiring global initialization:
     if(!m_is_ref_frame_selected)
     {
       LocalTrackingHandler::make_reference_frame(curr_frame);
