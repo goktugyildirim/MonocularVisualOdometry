@@ -42,6 +42,15 @@ class Utils
   remove_vector_elements_with_list_of_index(const std::vector<int>& list_of_index,
                                             std::vector<int>& vector_to_remove_elements);
 
+  static void
+  print_vector_elements(const std::vector<int>& vector_to_print);
+
+  static void
+  print_keypoints_with_indexes(const std::vector<cv::KeyPoint>& vector_to_print);
+
+  static void
+  print_keypoints_p2d_with_indexes(const std::vector<cv::Point2f>& vector_to_print);
+
 
 
 

@@ -119,12 +119,35 @@ Utils::remove_vector_elements_with_list_of_index(
 {
   std::vector<int> cp;
   for (int i = 0; i < vector_to_remove_elements.size(); i++)
-  {
-    if (std::find(list_of_index.begin(), list_of_index.end(), i) == list_of_index.end()) {
+    if (std::find(list_of_index.begin(), list_of_index.end(), i) == list_of_index.end())
       cp.push_back(vector_to_remove_elements[i]);
-    }
-  }
   vector_to_remove_elements = cp;
+}
+
+void
+Utils::print_vector_elements(const std::vector<int> &vector_to_print)
+{
+  for (int i = 0; i < vector_to_print.size(); i++)
+    std::cout << vector_to_print[i] << " ";
+  std::cout << std::endl;
+}
+
+void
+Utils::print_keypoints_with_indexes(
+  const std::vector<cv::KeyPoint> &vector_to_print)
+{
+  for (int i = 0; i < vector_to_print.size(); i++)
+    std::cout << i << " " << vector_to_print[i].pt << " | ";
+  std::cout << std::endl;
+}
+
+void
+Utils::print_keypoints_p2d_with_indexes(
+  const std::vector<cv::Point2f> &vector_to_print)
+{
+  for (int i = 0; i < vector_to_print.size(); i++)
+    std::cout << i << " " << vector_to_print[i] << " | ";
+  std::cout << std::endl;
 }
 
 //
