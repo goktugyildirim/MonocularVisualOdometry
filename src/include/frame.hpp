@@ -46,6 +46,12 @@ class Frame
                 cv::Point(75, 500),
                 cv::FONT_HERSHEY_DUPLEX,
                 2, CV_RGB(0, 0, 255), 3);
+
+    cv::putText(img_colored,
+                "Reference Frame",
+                cv::Point(75, 500),
+                cv::FONT_HERSHEY_DUPLEX,
+                2, CV_RGB(0, 0, 255), 3);
   }
 
   void

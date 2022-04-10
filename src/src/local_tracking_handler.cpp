@@ -75,8 +75,8 @@ LocalTrackingHandler::track_frames(
     auto start_local_tracking_spin = std::chrono::steady_clock::now();
     if (m_is_ref_frame_selected)
     {
-      //LocalTrackingHandler::track_observations_optical_flow(50,m_params.ransac_outlier_threshold);
-       LocalTrackingHandler::track_observations_descriptor_matching(m_params.ransac_outlier_threshold);
+      LocalTrackingHandler::track_observations_optical_flow(50,m_params.ransac_outlier_threshold);
+      // LocalTrackingHandler::track_observations_descriptor_matching(m_params.ransac_outlier_threshold);
 
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(m_params.max_angular_px_disp,
                                                                   10,
@@ -519,8 +519,8 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
   FrameSharedPtr curr_frame = m_frames.get_curr_frame();
   cv::Mat img_show_ref;
   cv::Mat img_show_curr;
-  ref_frame->image_gray_with_kpts.copyTo(img_show_ref);
-  curr_frame->image_gray_with_kpts.copyTo(img_show_curr);
+  ref_frame->img_colored.copyTo(img_show_ref);
+  curr_frame->img_colored.copyTo(img_show_curr);
 
   std::string count_curr_track = std::to_string(m_vector_tracked_p3d_ids_local.size());
 

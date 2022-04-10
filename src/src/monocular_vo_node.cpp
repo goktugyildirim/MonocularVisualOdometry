@@ -7,12 +7,12 @@ MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
   : Node("bundle_adjustment_node", node_options), m_frame_id(0), // 400
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
-   "FAST","ORB",
+   "FAST","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
    1000,9999,99999999,150,
    // The most important parameters:
    40, 5,
-   20, 10,3)
+   20, 10,1)
 {
   // Local Tracking ::
   m_queue_frames_to_local_tracking = std::make_shared<LockFreeQueue>(9999999);
@@ -52,8 +52,7 @@ MonocularVONode::CallbackImageProvider()
     std::cout << "Image x:" << img.cols << " y:"  << img.rows << std::endl;
 
 
-    FameSharedPtr view(new Frame);
-    view->img_colored = img;
+
 
     bool use_undistorted_img = false;
 
@@ -67,6 +66,16 @@ MonocularVONode::CallbackImageProvider()
     cv::Mat img_gray_with_kpts;
     cv::cvtColor(img, img_gray, cv::COLOR_BGR2GRAY);
     cv::cvtColor(img, img_gray_with_kpts, cv::COLOR_BGR2GRAY);
+
+    cv::putText(img,
+                std::to_string(m_frame_id),
+                cv::Point(75, 400),
+                cv::FONT_HERSHEY_DUPLEX,
+                3, CV_RGB(0, 0, 255), 4);
+
+
+    FameSharedPtr view(new Frame);
+    view->img_colored = img;
 
     Vision::make_img_3_channel(img_gray_with_kpts);
 
