@@ -36,10 +36,11 @@ class Utils
   static void
   get_not_matched_kpt_ids(const FrameSharedPtr& frame,
                           const std::vector<cv::DMatch>& matches,
-                          std::vector<int>& vector_not_matched_kpt_ids);
+                          std::vector<int>& vector_not_matched_kpt_ids,
+                          const bool& is_prev_frame);
 
   static void
-  remove_vector_elements_with_list_of_index(const std::vector<int>& list_of_index,
+  remove_lost_landmark_ids(const std::vector<int>& list_of_index,
                                             std::vector<int>& vector_to_remove_elements);
 
   static void
@@ -51,14 +52,10 @@ class Utils
   static void
   print_keypoints_p2d_with_indexes(const std::vector<cv::Point2f>& vector_to_print);
 
-
-
-
   static void
-  remove_row_of_matrix_with_list_of_index(
-      const cv::Mat& matrix,
-      const std::vector<int>& list_of_index,
-      cv::Mat& matrix_without_row);
+  update_curr_frame_descriptor(
+      const cv::Mat &matrix, const std::vector<cv::DMatch> &matches,
+      cv::Mat &matrix_without_row);
 
 
 };

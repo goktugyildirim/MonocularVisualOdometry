@@ -73,17 +73,16 @@ Utils::project_point(
 
 
 void
-Utils::remove_row_of_matrix_with_list_of_index(
-  const cv::Mat &matrix, const std::vector<int> &list_of_index,
+Utils::update_curr_frame_descriptor(
+  const cv::Mat &matrix, const std::vector<cv::DMatch> &matches,
   cv::Mat &matrix_without_row)
 {
-  matrix_without_row = cv::Mat::zeros(matrix.rows-list_of_index.size(), matrix.cols, 6);
+  matrix_without_row = cv::Mat::zeros(matches.size(), matrix.cols, 6);
   int row_counter = 0;
-  for (int i = 0; i < matrix.rows; i++) {
-    if (std::find(list_of_index.begin(), list_of_index.end(), i) == list_of_index.end()) {
-      matrix.row(i).copyTo(matrix_without_row.row(row_counter));
-      row_counter++;
-    }
+  for (const cv::DMatch &match : matches)
+  {
+    matrix.row(match.trainIdx).copyTo(matrix_without_row.row(row_counter));
+    row_counter++;
   }
 }
 
@@ -92,17 +91,25 @@ void
 Utils::get_not_matched_kpt_ids(
   const FrameSharedPtr &frame,
   const std::vector<cv::DMatch> &matches,
-  std::vector<int> &vector_not_matched_kpt_ids)
+  std::vector<int> &vector_not_matched_kpt_ids,
+  const bool& is_prev_frame)
 {
   for (int i = 0; i < frame->keypoints.size(); i++)
   {
     bool is_matched = false;
     for (int j = 0; j < matches.size(); j++)
     {
-      if (matches[j].queryIdx == i)
-      {
-        is_matched = true;
-        break;
+      if (is_prev_frame) {
+        if (matches[j].queryIdx == i) {
+          is_matched = true;
+          break;
+        }
+      }
+      else {
+        if (matches[j].trainIdx == i) {
+          is_matched = true;
+          break;
+        }
       }
     }
     if (!is_matched)
@@ -113,7 +120,7 @@ Utils::get_not_matched_kpt_ids(
 }
 
 void
-Utils::remove_vector_elements_with_list_of_index(
+Utils::remove_lost_landmark_ids(
   const std::vector<int> &list_of_index,
   std::vector<int> &vector_to_remove_elements)
 {
