@@ -77,7 +77,9 @@ LocalTrackingHandler::track_frames(
     {
       LocalTrackingHandler::track_observations_optical_flow(25,
                 m_params.ransac_outlier_threshold);
-      // LocalTrackingHandler::track_observations_descriptor_matching(m_params.ransac_outlier_threshold);
+
+//      LocalTrackingHandler::track_observations_descriptor_matching(
+//                    m_params.ransac_outlier_threshold);
 
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(
           m_params.max_angular_px_disp,

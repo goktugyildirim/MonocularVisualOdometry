@@ -11,7 +11,7 @@ MonocularVONode::MonocularVONode(
    "BruteForce-Hamming","SEL_KNN",
    1000,9999,99999999,210,
    // The most important parameters:
-   150, 5,
+   180, 5,
    20, 3,0.8)
 {
   // Local Tracking ::
