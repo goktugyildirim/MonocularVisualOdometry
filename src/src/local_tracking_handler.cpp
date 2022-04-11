@@ -75,12 +75,14 @@ LocalTrackingHandler::track_frames(
     auto start_local_tracking_spin = std::chrono::steady_clock::now();
     if (m_is_ref_frame_selected)
     {
-      LocalTrackingHandler::track_observations_optical_flow(50,m_params.ransac_outlier_threshold);
+      LocalTrackingHandler::track_observations_optical_flow(25,
+                m_params.ransac_outlier_threshold);
       // LocalTrackingHandler::track_observations_descriptor_matching(m_params.ransac_outlier_threshold);
 
-      m_tracking_evaluation = LocalTrackingHandler::eval_tracking(m_params.max_angular_px_disp,
-                                                                  10,
-                                                                  false);
+      m_tracking_evaluation = LocalTrackingHandler::eval_tracking(
+          m_params.max_angular_px_disp,
+                          10,
+                          false);
       LocalTrackingHandler::show_tracking(1.2);
 
       //std::this_thread::sleep_for(3000000ms);
@@ -439,7 +441,7 @@ LocalTrackingHandler::track_observations_optical_flow(const int& window_size,
   cv::Size winSize = cv::Size(window_size,window_size);
   cv::TermCriteria termcrit=cv::TermCriteria(
       cv::TermCriteria::COUNT+cv::TermCriteria::EPS,
-      50, 0.01);
+      30, 0.01);
 
   cv::calcOpticalFlowPyrLK(prev_frame->image_gray,
                            curr_frame->image_gray,
