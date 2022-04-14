@@ -17,12 +17,10 @@ public:
   using FrameSharedPtr = std::shared_ptr<Frame>;
   explicit Initializer(const MonocularVO::Params& params);
 
-  bool try_init(FrameSharedPtr& ref_frame,
-                FrameSharedPtr& curr_frame,
-                std::vector<int>&vector_tracked_p3d_ids_local,
-                std::vector<int>&vector_tracked_p3d_ids_global,
-                std::vector<cv::Point3d>& vector_initial_p3d,
-                const double& scale);
+  bool try_init(std::vector<cv::Point2f>& kpts_ref,
+                std::vector<cv::Point2f>& kpts_curr,
+                std::vector<int>& vector_tracked_p3d_ids_global,
+                std::vector<cv::Point3d>& vector_p3d_global);
 
 
 

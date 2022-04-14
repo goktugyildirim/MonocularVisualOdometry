@@ -11,8 +11,8 @@ MonocularVONode::MonocularVONode(
    "BruteForce-Hamming","SEL_KNN",
    1000,9999,99999999,210,
    // The most important parameters:
-   180, 5,
-   20, 3,0.8)
+   80, 5,
+   20, 1,0.8)
 {
   // Local Tracking ::
   m_queue_frames_to_local_tracking = std::make_shared<LockFreeQueue>(9999999);
@@ -50,8 +50,6 @@ MonocularVONode::CallbackImageProvider()
 
     if (m_frame_id == 0)
     std::cout << "Image x:" << img.cols << " y:"  << img.rows << std::endl;
-
-
 
 
     bool use_undistorted_img = false;

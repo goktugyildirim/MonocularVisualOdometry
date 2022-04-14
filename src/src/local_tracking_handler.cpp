@@ -85,7 +85,7 @@ LocalTrackingHandler::track_frames(
           m_params.max_angular_px_disp,
                           10,
                           false);
-      LocalTrackingHandler::show_tracking(1.2);
+      LocalTrackingHandler::show_tracking(1.5);
 
       //std::this_thread::sleep_for(3000000ms);
 
@@ -94,11 +94,17 @@ LocalTrackingHandler::track_frames(
         // Tracking is ok | not initialized | ready try to init
         if (!m_is_init_done and m_tracking_evaluation.ready_for_trying_to_init)
         {
-          FrameSharedPtr ref_frame =  m_frames.get_ref_frame();
-          /*m_is_init_done = m_initializer.try_init(ref_frame, curr_frame,
-                                                  m_vector_tracked_p3d_ids_local,
-                                                  m_vector_tracked_p3d_ids_global, m_vector_p3d,
-                                                  1);*/
+          std::vector<cv::Point2f> curr_tracked_p2d = m_frames.get_curr_frame()->keypoints_p2d;
+          std::vector<cv::Point2f> ref_tracked_p2d;
+          // Filter reference frame key-points:
+          for (const int& id : m_vector_tracked_p3d_ids_local)
+            ref_tracked_p2d.push_back(m_vector_ref_keypoints_p2d.at(id));
+          // Try initialization:
+
+          m_is_init_done = m_initializer.try_init(ref_tracked_p2d, curr_tracked_p2d,
+                                                  m_vector_tracked_p3d_ids_global,
+                                                  m_vector_p3d);
+
           if (m_is_init_done)
           {
             using namespace std::chrono_literals;
@@ -133,6 +139,7 @@ LocalTrackingHandler::track_frames(
                 << " millisecond." << std::endl;
     }
     // Each new frame comes:
+    std::cout << "Curr frame id: " << m_frames.get_curr_frame()->frame_id << std::endl;
     std::cout << "Reference frame id: " << m_frames.get_ref_frame()->frame_id << std::endl;
     // Build observations ##########################################################################
     if (print_tracking_info)
@@ -308,7 +315,6 @@ LocalTrackingHandler::track_observations_descriptor_matching(
 void
 LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
 {
-  std::cout << "Make ref" << std::endl;
   m_frames.set_curr_frame_is_ref_frame();
   m_is_ref_frame_selected = true;
   m_vector_tracked_p3d_ids_local.clear();
