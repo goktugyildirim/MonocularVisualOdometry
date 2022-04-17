@@ -427,81 +427,6 @@ MonocularVO::Vision::extract_features(
        << " millisecond." << std::endl;
 }
 
-/*
-
-int
-MonocularVO::Vision::track_features(
-  const MonocularVO::Params& params,
-  MapInitialSharedPtr & map,
-  cv::Mat& R,
-  cv::Mat& t)
-{
-  FrameSharedPtr prev_frame = map->get_prev_frame();
-  FrameSharedPtr curr_frame = map->get_curr_frame();
-
-// calculate optical flow
-  std::vector<uchar> status;
-  std::vector<float> err;
-  cv::Size winSize = cv::Size(25,25);
-  cv::TermCriteria termcrit=cv::TermCriteria(
-  cv::TermCriteria::COUNT+cv::TermCriteria::EPS,
-  30, 0.01);
-*/
-/*
-  std::cout << "Before KLT between | previous frame " << prev_frame->frame_id << " kpt count: "
-  << prev_frame->keypoints_p2d.size() <<  " | current frame " << curr_frame->frame_id <<
-  " kpt count: " << curr_frame->keypoints_p2d.size() << std::endl;
-*//*
-
-  cv::calcOpticalFlowPyrLK(prev_frame->image_gray,
-                           curr_frame->image_gray,
-                           prev_frame->keypoints_p2d,
-                           curr_frame->keypoints_p2d,
-                           status, err, winSize,
-                           3, termcrit, 0, 0.001);
-
-  assert(prev_frame->keypoints_p2d.size() == curr_frame->keypoints_p2d.size());
-
-  map->update_past_frames_optical_flow(status);
-*/
-/*
-  std::cout << "After KLT between | previous frame " << prev_frame->frame_id << " kpt count: "
-            << prev_frame->keypoints_p2d.size() <<  " | current frame " << curr_frame->frame_id <<
-            " kpt count: " << curr_frame->keypoints_p2d.size() << std::endl;
-*//*
-
-
-  // Calculate fundamental matrix
-  cv::Mat inliers_F;
-  cv::Mat F = Vision::get_F(prev_frame, curr_frame,
-            params.ransac_outlier_threshold, inliers_F);
-  // Calculate essential matrix
-  cv::Mat inliers_E;
-  cv::Mat E = Vision::get_E(prev_frame, curr_frame,
-            params.ransac_outlier_threshold, inliers_E, params.K);
-  //E = params.K.t() * F * params.K;
-
-  assert(inliers_F.rows == inliers_E.rows == prev_frame->keypoints_p2d.size());
-
-  // Refine matches
-  map->update_past_frames_epipolar(inliers_F, inliers_E);
-
-  assert(prev_frame->keypoints_p2d.size() == curr_frame->keypoints_p2d.size());
-
-  */
-/*std::cout << "After match refinement | prev " << prev_frame->frame_id << " and curr keyframe " <<
-            curr_frame->frame_id << " | matched kpt cout: " << curr_frame->keypoints_p2d.size() << std::endl;*//*
-
-
-
-  Vision::recover_pose(prev_frame, curr_frame, F, E, R, t, params.K);
-
-  int count_local_landmark_ = map->count_local_landmark_;
-  return count_local_landmark_;
-}
-
-*/
-
 
 
 double
@@ -521,5 +446,37 @@ Vision::average_ang_px_displacement(
   }
   return average_displacement/prev_frame.size();
 }
+
+
+cv::Point2f
+Vision::pixel_2_cam_norm_plane(const cv::Point2f &p,
+                                           const cv::Mat &K)
+{
+  return cv::Point2f(
+      (p.x - K.at<double>(0, 2)) / K.at<double>(0, 0),
+      (p.y - K.at<double>(1, 2)) / K.at<double>(1, 1));
+}
+
+cv::Point3f
+Vision::pixel_2_cam(
+  const cv::Point2f &p, const cv::Mat &K,
+  double depth)
+{
+  return cv::Point3f(
+      depth * (p.x - K.at<double>(0, 2)) / K.at<double>(0, 0),
+      depth * (p.y - K.at<double>(1, 2)) / K.at<double>(1, 1),
+      depth);
+}
+
+
+cv::Point2f
+Vision::cam_2_pixel(const cv::Point3f &p, const cv::Mat &K)
+{
+  return cv::Point2f(
+      K.at<double>(0, 0) * p.x / p.z + K.at<double>(0, 2),
+      K.at<double>(1, 1) * p.y / p.z + K.at<double>(1, 2));
+}
+
+
 
 } // eof MonocularVO

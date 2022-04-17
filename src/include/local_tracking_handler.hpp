@@ -80,7 +80,7 @@ private:
   size_t m_counter_p3d;
   std::vector<int> m_vector_tracked_p3d_ids_local;
   std::vector<int> m_vector_tracked_p3d_ids_global;
-  std::vector<cv::Point3d> m_vector_p3d;
+  std::vector<cv::Point3f> m_vector_p3d;
 
   Frames m_frames;
 

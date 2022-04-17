@@ -84,10 +84,12 @@ LocalTrackingHandler::track_frames(
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(
           m_params.max_angular_px_disp,
                           10,
-                          false);
+                          true);
       LocalTrackingHandler::show_tracking(1.5);
 
       //std::this_thread::sleep_for(3000000ms);
+
+      m_tracking_evaluation.ready_for_trying_to_init = true;
 
       if (m_tracking_evaluation.is_tracking_ok)
       {
@@ -341,9 +343,9 @@ LocalTrackingHandler::make_reference_frame(FrameSharedPtr& curr_frame)
   // in order to absorb scale stuff xD
   for (int i=0; i<m_frames.get_ref_frame()->keypoints.size(); i++)
   {
-    m_vector_p3d.push_back(cv::Point3d {static_cast<double>(m_counter_p3d),
-                                       static_cast<double>(m_counter_p3d),
-                                       static_cast<double>(m_counter_p3d)});
+    m_vector_p3d.emplace_back(static_cast<float>(m_counter_p3d),
+                                       static_cast<float>(m_counter_p3d),
+                                       static_cast<float>(m_counter_p3d));
     m_vector_ref_keypoints.push_back(curr_frame->keypoints[i]);
     m_vector_ref_keypoints_p2d.push_back(curr_frame->keypoints[i].pt);
     m_counter_p3d += 1;

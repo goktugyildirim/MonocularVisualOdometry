@@ -9,7 +9,7 @@ MonocularVONode::MonocularVONode(
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
    "FAST","BRIEF",
    "BruteForce-Hamming","SEL_KNN",
-   1000,9999,99999999,210,
+   1000,9999,99999999,190,
    // The most important parameters:
    80, 5,
    20, 1,0.8)

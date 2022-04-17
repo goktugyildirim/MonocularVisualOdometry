@@ -35,6 +35,10 @@ namespace MonocularVO
 
     cv::Mat K = cv::Mat::eye(3,3,6);
     cv::Mat mat_dist_coeff;
+    double fx = 1761.2;
+    double fy = 1756.2;
+    double cx = 936.1;
+    double cy = 539.3;
 
     Params() = default;
     Params(const bool& use_modern,
@@ -51,7 +55,7 @@ namespace MonocularVO
            const int& max_frame_count_to_key_frame,
            const double& max_angular_px_disp,
            const float& ransac_outlier_threshold)
-    {
+     {
       this->use_modern = use_modern;
       this->detector_type = detector_type;
       this->descriptor_type = descriptor_type;
@@ -79,6 +83,10 @@ namespace MonocularVO
       this->max_frame_count_to_key_frame = max_frame_count_to_key_frame;
       this->max_angular_px_disp = max_angular_px_disp;
       this->ransac_outlier_threshold = ransac_outlier_threshold;
+      this->fx = this->K.at<double>(0,0);
+      this->fy = this->K.at<double>(1,1);
+      this->cx = this->K.at<double>(0,2);
+      this->cy = this->K.at<double>(1,2);
     }
   };
 

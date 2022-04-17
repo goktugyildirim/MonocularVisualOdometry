@@ -119,25 +119,16 @@ class Vision
   extract_features(FrameSharedPtr& frame,
                    const MonocularVO::Params& params);
 
-
-
-/*
-  static MatchKeyFrameSharedPtr
-  match_key_frames(
-      const MonocularVO::Params& params,
-      FrameSharedPtr& keyframe_old,
-      FrameSharedPtr& keyframe_new);
-
-
-  static cv::Mat
-  visualize_feature_tracking(const MapInitialSharedPtr & map,
-                             const bool& save_images,
-                             const bool& draw_line);*/
-
   static double
   average_ang_px_displacement(const std::vector<cv::Point2f> &prev_frame,
                               const std::vector<cv::Point2f> &curr_frame,
                               const float& img_height, const float& img_width);
+
+
+  // ---------------- transformations ------------------
+  static cv::Point2f pixel_2_cam_norm_plane(const cv::Point2f &p, const cv::Mat &K);
+  static cv::Point3f pixel_2_cam(const cv::Point2f &p, const cv::Mat &K, double depth = 1);
+  static cv::Point2f cam_2_pixel(const cv::Point3f &p, const cv::Mat &K);
 
 };
 
