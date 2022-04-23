@@ -95,24 +95,6 @@ class Vision
         cv::Mat& inliers_E,
         const cv::Mat& K);
 
-  static void
-  recover_pose(
-        const MonocularVO::FrameSharedPtr& view1,
-        const MonocularVO::FrameSharedPtr& view2,
-        const cv::Mat& F,
-        const cv::Mat& E,
-        cv::Mat& R,
-        cv::Mat& t,
-        const cv::Mat& K);
-
-
-  static void
-  refine_matches(FrameSharedPtr& view1,
-                 FrameSharedPtr& view2,
-                 const cv::Mat& inliers_F,
-                 const cv::Mat& inliers_E,
-                 std::vector<int>& old_kpt_ids,
-                 std::vector<int>& new_kpt_ids);
 
 
   static void
@@ -123,6 +105,12 @@ class Vision
   average_ang_px_displacement(const std::vector<cv::Point2f> &prev_frame,
                               const std::vector<cv::Point2f> &curr_frame,
                               const float& img_height, const float& img_width);
+
+  static void
+  pose_estimation_2d2d(const std::vector<cv::Point2f> &kpts_prev_frame,
+                       const std::vector<cv::Point2f> &kpts_curr_frame,
+                       const MonocularVO::Params& params,
+                       cv::Mat& R, cv::Mat& t);
 
 
   // ---------------- transformations ------------------

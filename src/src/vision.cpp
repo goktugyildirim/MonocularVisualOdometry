@@ -89,7 +89,8 @@ MonocularVO::Vision::keypoints_modern(
   cv::Ptr<cv::FeatureDetector> feature_detector;
 
   if (detectorType == "ORB")
-    feature_detector = cv::ORB::create(params.max_orb_detect);
+    feature_detector = cv::ORB::create(params.max_orb_detect, 1.2, 15,
+     31, 0, 2, cv::ORB::HARRIS_SCORE, 50, 100);
   else if (detectorType == "FAST")
     feature_detector = cv::FastFeatureDetector::create(
         params.fast_threshold, true,
@@ -345,62 +346,6 @@ MonocularVO::Vision::get_E(
 
 
 
-void
-MonocularVO::Vision::refine_matches(
-  FrameSharedPtr &view1,
-  FrameSharedPtr &view2,
-  const cv::Mat &inliers_F,
-  const cv::Mat &inliers_E,
-  std::vector<int> &old_kpt_ids,
-  std::vector<int> &new_kpt_ids)
-{
-  int indexCorrection = 0;
-  for(size_t i=0; i<inliers_E.rows; i++)
-  {
-    if (inliers_F.at<bool>(i,0) == false or inliers_E.at<bool>(i,0) == false)
-    {
-      old_kpt_ids.erase(old_kpt_ids.begin() + i - indexCorrection);
-      new_kpt_ids.erase(new_kpt_ids.begin() + i - indexCorrection);
-      view1->keypoints_p2d.erase (view1->keypoints_p2d.begin() + i - indexCorrection);
-      view2->keypoints_p2d.erase (view2->keypoints_p2d.begin() + i - indexCorrection);
-      indexCorrection++;
-    }
-  }
-
-}
-
-
-
-void
-MonocularVO::Vision::recover_pose(
-  const MonocularVO::FrameSharedPtr& view1,
-  const MonocularVO::FrameSharedPtr& view2,
-  const cv::Mat& F,
-  const cv::Mat& E,
-  cv::Mat& R,
-  cv::Mat& t,
-  const cv::Mat& K)
-{
-  cv::Point2d c = {K.at<double>(0, 3),
-                   K.at<double>(1,3)};
-  double focal_l = K.at<double>(0,0);
-  cv::Mat inliers;
-  int inlier_num = cv::recoverPose(
-      E, view1->keypoints_p2d,
-      view2->keypoints_p2d,
-      R, t, focal_l, c);
-
-/*  int c = 0;
-  for(size_t i=0; i<inliers.rows; i++)
-  {
-    if (inliers.at<bool>(i,0) == false)
-    {
-      c++;
-    }
-  }
-  std::cout << "recovery pose outliers count: " << c++ << std::endl;*/
-
-}
 
 
 
@@ -478,5 +423,67 @@ Vision::cam_2_pixel(const cv::Point3f &p, const cv::Mat &K)
 }
 
 
+void Vision::pose_estimation_2d2d(
+  const std::vector<cv::Point2f> &kpts_prev_frame,
+  const std::vector<cv::Point2f> &kpts_curr_frame,
+  const MonocularVO::Params& params,
+  cv::Mat& R, cv::Mat& t)
+{
+  double fx = params.K.at<double>(0,0);
+  double fy = params.K.at<double>(1,1);
+  double cx = params.K.at<double>(0,2);
+  double cy = params.K.at<double>(1,2);
+  double f =  params.K.at<double>(1,1);
+  cv::Point2d c(cx, cy);
+  // Undistorted points:
+  // cv::undistortPoints(kpts_ref, kpts_ref_undistorted_norm_inlier,
+  // m_params.K, m_params.mat_dist_coeff, cv::noArray(), m_params.K);
+  std::vector<cv::Point2f> kpts_ref_undistorted_norm;
+  std::vector<cv::Point2f> kpts_curr_undistorted_norm;
+  cv::undistortPoints(kpts_prev_frame, kpts_ref_undistorted_norm, params.K,
+                      params.mat_dist_coeff);
+  cv::undistortPoints(kpts_curr_frame, kpts_curr_undistorted_norm, params.K,
+                      params.mat_dist_coeff);
+  std::vector<cv::Point2f> kpts_ref_undistorted_focal;
+  std::vector<cv::Point2f> kpts_curr_undistorted_focal;
+  auto norm_to_focal = [&](const cv::Point2f& p) {
+    return cv::Point2f(p.x * fx + cx, p.y * fy + cy);
+  };
+  std::transform(kpts_ref_undistorted_norm.begin(), kpts_ref_undistorted_norm.end(),
+                 std::back_inserter(kpts_ref_undistorted_focal), norm_to_focal);
+  std::transform(kpts_curr_undistorted_norm.begin(), kpts_curr_undistorted_norm.end(),
+                 std::back_inserter(kpts_curr_undistorted_focal), norm_to_focal);
+
+  cv::Mat inlier_mask;
+  cv::Mat F = cv::findFundamentalMat(kpts_ref_undistorted_focal,
+                                     kpts_curr_undistorted_focal,
+                                     cv::FM_RANSAC,
+                                     0.2,0.99,
+                                     inlier_mask);
+  cv::Mat E = params.K.t() * F * params.K;
+  // Essential matrix cannot zero matrix:
+  std::cout << "E = " << std::endl << E << std::endl;
+
+  int count_inlier = cv::recoverPose(
+      E, kpts_ref_undistorted_focal,
+      kpts_curr_undistorted_focal, R, t);
+
+  std::cout << "Inlier count: " << count_inlier << std::endl;
+
+  cv::Mat t_x =
+      (cv::Mat_<double>(3, 3) << 0, -t.at<double>(2, 0), t.at<double>(1, 0),
+       t.at<double>(2, 0), 0, -t.at<double>(0, 0),
+       -t.at<double>(1, 0), t.at<double>(0, 0), 0);
+
+  for (int i=0; i<kpts_ref_undistorted_norm.size(); i++)
+  {
+    cv::Point2d pt1 = kpts_ref_undistorted_norm[i];
+    cv::Mat y1 = (cv::Mat_<double>(3, 1) << pt1.x, pt1.y, 1);
+    cv::Point2d pt2 = kpts_curr_undistorted_norm[i];
+    cv::Mat y2 = (cv::Mat_<double>(3, 1) << pt2.x, pt2.y, 1);
+    cv::Mat d = y2.t() * t_x * R * y1;
+    //std::cout << "epipolar constraint = " << d << std::endl;
+  }
+}
 
 } // eof MonocularVO

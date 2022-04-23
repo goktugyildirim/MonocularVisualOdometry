@@ -7,12 +7,12 @@ MonocularVONode::MonocularVONode(
   const rclcpp::NodeOptions &node_options)
   : Node("bundle_adjustment_node", node_options), m_frame_id(0), // 400
       m_params(true, // The fastest combination : FAST - BRIEF - use modern: true
-   "FAST","BRIEF",
+   "ORB","ORB",
    "BruteForce-Hamming","SEL_KNN",
-   1000,9999,99999999,190,
+   300,9999,99999999,190,
    // The most important parameters:
-   80, 5,
-   20, 1,0.8)
+   50, 5,
+   20, 1,1)
 {
   // Local Tracking ::
   m_queue_frames_to_local_tracking = std::make_shared<LockFreeQueue>(9999999);
@@ -97,7 +97,7 @@ MonocularVONode::CallbackImageProvider()
   }
 //  else
 //    m_frame_id = 0;
-  m_frame_id++;
+  m_frame_id = m_frame_id + 1;
 }
 
 

@@ -20,7 +20,8 @@ public:
   bool try_init(std::vector<cv::Point2f>& kpts_ref,
                 std::vector<cv::Point2f>& kpts_curr,
                 std::vector<int>& vector_tracked_p3d_ids_global,
-                std::vector<cv::Point3f>& vector_p3d_global);
+                std::vector<cv::Point3f>& vector_p3d_global,
+                cv::Mat& t_all);
 
 
 

@@ -174,9 +174,11 @@ MonocularVO::LocalHandler::build_local_observations(Batch& batch)
   cv::Mat R, t, Rt;
   FrameSharedPtr frame_first = batch[0];
   FrameSharedPtr frame_second = batch[1];
+  /*
   Vision::recover_pose(frame_first, frame_second,
                        F_init, E_init,
                        R, t, params_.K);
+                       */
 
   cv::Mat rvec;
   cv::Rodrigues(R, rvec);

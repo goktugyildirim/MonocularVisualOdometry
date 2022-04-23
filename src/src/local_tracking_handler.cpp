@@ -47,6 +47,9 @@ LocalTrackingHandler::track_frames(
   cv::moveWindow("Local Feature Tracking", 0,0);
 
   bool print_tracking_info = false;
+  cv::Mat t_all = cv::Mat::zeros(3,1,CV_64F);
+  cv::Mat R_all = cv::Mat::eye(3,3,CV_64F);
+  cv::Mat camera_pose = cv::Mat::eye(4, 4, CV_64F);
 
   while (m_keep_tracking)
   {
@@ -78,13 +81,13 @@ LocalTrackingHandler::track_frames(
       LocalTrackingHandler::track_observations_optical_flow(25,
                 m_params.ransac_outlier_threshold);
 
-//      LocalTrackingHandler::track_observations_descriptor_matching(
-//                    m_params.ransac_outlier_threshold);
+      //LocalTrackingHandler::track_observations_descriptor_matching(
+        //            m_params.ransac_outlier_threshold);
 
       m_tracking_evaluation = LocalTrackingHandler::eval_tracking(
           m_params.max_angular_px_disp,
                           10,
-                          true);
+                          false);
       LocalTrackingHandler::show_tracking(1.5);
 
       //std::this_thread::sleep_for(3000000ms);
@@ -93,19 +96,39 @@ LocalTrackingHandler::track_frames(
 
       if (m_tracking_evaluation.is_tracking_ok)
       {
+        cv::Mat R, t;
+        Vision::pose_estimation_2d2d(m_frames.get_prev_frame()->keypoints_p2d,
+                                     m_frames.get_curr_frame()->keypoints_p2d,
+                                     m_params, R, t);
+
+        // Scale can ben given from speed odometer or IMU | x = x0 + V*dt
+        double scale = 1.0;
+        cv::Mat T = cv::Mat::eye(4, 4, R.type());
+        T(cv::Rect(0, 0, 3, 3)) = R * 1.0;
+        T.col(3).rowRange(0, 3) = t * 1.0;
+        camera_pose = camera_pose * T.inv();
+        // print camera pose translation:
+        std::cout << "Camera Pose Translation: " << std::endl;
+        std::cout << camera_pose.col(3).rowRange(0, 3) << std::endl;
+
+
+
         // Tracking is ok | not initialized | ready try to init
         if (!m_is_init_done and m_tracking_evaluation.ready_for_trying_to_init)
         {
+          /*
           std::vector<cv::Point2f> curr_tracked_p2d = m_frames.get_curr_frame()->keypoints_p2d;
           std::vector<cv::Point2f> ref_tracked_p2d;
           // Filter reference frame key-points:
           for (const int& id : m_vector_tracked_p3d_ids_local)
             ref_tracked_p2d.push_back(m_vector_ref_keypoints_p2d.at(id));
           // Try initialization:
-
           m_is_init_done = m_initializer.try_init(ref_tracked_p2d, curr_tracked_p2d,
                                                   m_vector_tracked_p3d_ids_global,
-                                                  m_vector_p3d);
+                                                  m_vector_p3d,
+                                                  t);
+                                                  */
+          m_is_init_done = false;
 
           if (m_is_init_done)
           {
@@ -146,7 +169,8 @@ LocalTrackingHandler::track_frames(
     // Build observations ##########################################################################
     if (print_tracking_info)
       print_tracking();
-    // Note that: It only stores the Point3D ids [N ... N+M] not start from zero.
+
+
     std::cout << "Curr tracked landmark: " << m_vector_tracked_p3d_ids_global.size() << std::endl;
 
     //m_frames.print_info();
@@ -614,8 +638,9 @@ LocalTrackingHandler::show_tracking(const float& downs_ratio)
              cv::INTER_LINEAR);
   cv::imshow("Local Feature Tracking",
              img_show);
-  cv::waitKey(1);
+  cv::waitKey(1000);
 }
+
 
 void
 LocalTrackingHandler::print_tracking()
